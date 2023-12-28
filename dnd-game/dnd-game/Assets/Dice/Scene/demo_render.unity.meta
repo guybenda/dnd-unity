@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 6164cb896f5ca0749952d462c84744ce
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 26670
+  packageName: Dice
+  packageVersion: 2.0
+  assetPath: Assets/Dice/Scene/demo_render.unity
+  uploadId: 523274

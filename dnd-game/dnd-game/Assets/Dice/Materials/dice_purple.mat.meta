@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: c95354a5e1618ea4ba1cc66a9c46d5d6
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 26670
+  packageName: Dice
+  packageVersion: 2.0
+  assetPath: Assets/Dice/Materials/dice_purple.mat
+  uploadId: 523274

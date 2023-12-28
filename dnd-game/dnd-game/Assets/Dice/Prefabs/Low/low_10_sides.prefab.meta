@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 30572915244d1dd4eb8dfc8c3f6fcade
+timeCreated: 1491434920
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 26670
+  packageName: Dice
+  packageVersion: 2.0
+  assetPath: Assets/Dice/Prefabs/Low/low_10_sides.prefab
+  uploadId: 523274

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 7d50553a6aa1d274bb3ceb6f114ab749
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 26670
+  packageName: Dice
+  packageVersion: 2.0
+  assetPath: Assets/Dice/Materials/New Material.mat
+  uploadId: 523274

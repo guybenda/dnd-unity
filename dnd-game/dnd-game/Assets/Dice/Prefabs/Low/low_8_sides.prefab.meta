@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 3ff648e7d4556344b9e5e2eb8267c7fb
+timeCreated: 1491434919
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 26670
+  packageName: Dice
+  packageVersion: 2.0
+  assetPath: Assets/Dice/Prefabs/Low/low_8_sides.prefab
+  uploadId: 523274

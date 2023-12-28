@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: dbfdb98db1e248548b52ae687445b3a6
+timeCreated: 1491434643
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 26670
+  packageName: Dice
+  packageVersion: 2.0
+  assetPath: Assets/Dice/Prefabs/Mid/mid_12_sides.prefab
+  uploadId: 523274

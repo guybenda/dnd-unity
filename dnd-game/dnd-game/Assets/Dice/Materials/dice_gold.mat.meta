@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 0aabf6ae41540a74e9f0d07c68b0c648
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 26670
+  packageName: Dice
+  packageVersion: 2.0
+  assetPath: Assets/Dice/Materials/dice_gold.mat
+  uploadId: 523274

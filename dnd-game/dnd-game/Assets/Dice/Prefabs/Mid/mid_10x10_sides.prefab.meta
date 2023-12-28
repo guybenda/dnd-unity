@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: b97082d5579002a4ebd46b0505f16b16
+timeCreated: 1491434642
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 26670
+  packageName: Dice
+  packageVersion: 2.0
+  assetPath: Assets/Dice/Prefabs/Mid/mid_10x10_sides.prefab
+  uploadId: 523274

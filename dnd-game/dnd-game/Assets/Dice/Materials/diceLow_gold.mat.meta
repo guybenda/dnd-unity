@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 761da982ecc78ea4bb80d048d0dba66c
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 26670
+  packageName: Dice
+  packageVersion: 2.0
+  assetPath: Assets/Dice/Materials/diceLow_gold.mat
+  uploadId: 523274

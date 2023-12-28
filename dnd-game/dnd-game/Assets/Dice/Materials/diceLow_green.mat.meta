@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 5512086e2a98cd845b56cfc1fc32a580
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 26670
+  packageName: Dice
+  packageVersion: 2.0
+  assetPath: Assets/Dice/Materials/diceLow_green.mat
+  uploadId: 523274

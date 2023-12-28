@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: af94595ba8f843546801d489c2e425ff
+timeCreated: 1427463081
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 26670
+  packageName: Dice
+  packageVersion: 2.0
+  assetPath: Assets/Dice/Prefabs/Dice.physicmaterial
+  uploadId: 523274
