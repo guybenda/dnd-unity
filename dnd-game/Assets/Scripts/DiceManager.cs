@@ -59,7 +59,7 @@ public class DiceManager : MonoBehaviour
 
     Vector3 getRandomVelocity()
     {
-        return startingVelocity + Random.insideUnitSphere * 1;
+        return startingVelocity + Random.insideUnitSphere * 2;
     }
 
     GameObject instantiateDie(DiceType type, Vector3? position = null, Transform parent = null)

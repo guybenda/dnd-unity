@@ -49,13 +49,9 @@ public class DiceScript : MonoBehaviour
         // Outline
         outline.enabled = false;
         outline.OutlineMode = Outline.Mode.OutlineVisible;
-        outline.OutlineColor = Color.red;
-        outline.OutlineWidth = 5f;
+        outline.OutlineColor = Color.white;
+        outline.OutlineWidth = 2f;
     }
-
-    // public int? Result() {
-
-    // }
 
     Vector3[] MakeFacePoints()
     {
