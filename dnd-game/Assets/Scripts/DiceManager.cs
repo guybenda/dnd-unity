@@ -62,7 +62,7 @@ public class DiceManager : MonoBehaviour
         return startingVelocity + Random.insideUnitSphere * 1;
     }
 
-    GameObject instantiateDie(DiceType type, Vector3? position = null)
+    GameObject instantiateDie(DiceType type, Vector3? position = null, Transform parent = null)
     {
         GameObject dieFab = null;
 
@@ -91,7 +91,7 @@ public class DiceManager : MonoBehaviour
                 break;
         }
 
-        var die = Instantiate(dieFab, position ?? Vector3.zero, getRandomRotation());
+        var die = Instantiate(dieFab, position ?? Vector3.zero, getRandomRotation(), parent);
 
         var rb = die.GetComponent<Rigidbody>();
         rb.angularVelocity = getRandomAngularVelocity();
@@ -100,9 +100,9 @@ public class DiceManager : MonoBehaviour
         return die;
     }
 
-    public GameObject MakeDie(DiceType type, int? materialIndex = null, Vector3? position = null)
+    public GameObject MakeDie(DiceType type, int? materialIndex = null, Vector3? position = null, Transform parent = null)
     {
-        var die = instantiateDie(type, position);
+        var die = instantiateDie(type, position, parent);
 
         Material material;
         if (materialIndex.HasValue)
