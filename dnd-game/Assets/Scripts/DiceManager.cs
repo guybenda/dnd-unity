@@ -15,6 +15,8 @@ public class DiceManager : MonoBehaviour
     GameObject d20Prefab;
     GameObject d100Prefab;
 
+    readonly Vector3 startingVelocity = new(0, 2, 0);
+
     // Start is called before the first frame update
     void Start()
     {
@@ -50,36 +52,52 @@ public class DiceManager : MonoBehaviour
         return Dice.types[Random.Range(0, 7)];
     }
 
+    Vector3 getRandomAngularVelocity()
+    {
+        return Random.rotation.eulerAngles * Random.Range(-5f, 5f);
+    }
+
+    Vector3 getRandomVelocity()
+    {
+        return startingVelocity + Random.insideUnitSphere * 1;
+    }
+
     GameObject instantiateDie(DiceType type, Vector3? position = null)
     {
-        GameObject die = null;
+        GameObject dieFab = null;
 
         switch (type)
         {
             case DiceType.D4:
-                die = d4Prefab;
+                dieFab = d4Prefab;
                 break;
             case DiceType.D6:
-                die = d6Prefab;
+                dieFab = d6Prefab;
                 break;
             case DiceType.D8:
-                die = d8Prefab;
+                dieFab = d8Prefab;
                 break;
             case DiceType.D10:
-                die = d10Prefab;
+                dieFab = d10Prefab;
                 break;
             case DiceType.D12:
-                die = d12Prefab;
+                dieFab = d12Prefab;
                 break;
             case DiceType.D20:
-                die = d20Prefab;
+                dieFab = d20Prefab;
                 break;
             case DiceType.D100:
-                die = d100Prefab;
+                dieFab = d100Prefab;
                 break;
         }
 
-        return Instantiate(die, position ?? Vector3.zero, getRandomRotation());
+        var die = Instantiate(dieFab, position ?? Vector3.zero, getRandomRotation());
+
+        var rb = die.GetComponent<Rigidbody>();
+        rb.angularVelocity = getRandomAngularVelocity();
+        rb.velocity = getRandomVelocity();
+
+        return die;
     }
 
     public GameObject MakeDie(DiceType type, int? materialIndex = null, Vector3? position = null)
@@ -110,6 +128,6 @@ public class DiceManager : MonoBehaviour
 
     public void MakeRandom()
     {
-        var die = MakeDie(getRandomDiceType(), position: new(0, 3, 0));
+        var die = MakeDie(getRandomDiceType(), position: new(0, 2, 0));
     }
 }
