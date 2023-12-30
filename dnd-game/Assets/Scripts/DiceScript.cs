@@ -207,4 +207,9 @@ public class DiceScript : MonoBehaviour
 
         return lowestIdx + 1;
     }
+
+    public bool IsStatic()
+    {
+        return isStatic;
+    }
 }

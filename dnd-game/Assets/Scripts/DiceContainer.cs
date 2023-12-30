@@ -4,7 +4,7 @@ using System.Linq;
 using DndCommon;
 using UnityEngine;
 
-public class DiceEmitter : MonoBehaviour
+public class DiceContainer : MonoBehaviour
 {
     public Transform SpawnPoint;
 
@@ -59,11 +59,16 @@ public class DiceEmitter : MonoBehaviour
 
         for (var i = 0; i < dice.Length; i++)
         {
+            if (!dice[i].IsStatic())
+            {
+                continue;
+            }
+
             sum += dice[i].Result();
             counts[dice[i].Type]++;
         }
 
-        var countStr = string.Join(", ", counts.Where(a => a.Value > 0).Select(a => $"{a.Value}d{a.Key}"));
+        var countStr = string.Join(" + ", counts.Where(a => a.Value > 0).Select(a => $"{a.Value}d{(int)a.Key}"));
 
         return (sum, countStr);
     }
