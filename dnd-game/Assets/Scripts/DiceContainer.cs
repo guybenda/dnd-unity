@@ -2,9 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using DndCommon;
+using Unity.Netcode;
 using UnityEngine;
 
-public class DiceContainer : MonoBehaviour
+
+public class DiceContainer : NetworkBehaviour
 {
     public Transform SpawnPoint;
 
@@ -22,12 +24,15 @@ public class DiceContainer : MonoBehaviour
 
     void Awake()
     {
+        if (!IsServer) return;
+
         diceManager = GameObject.FindGameObjectWithTag("DiceManager").GetComponent<DiceManager>();
     }
 
-    public void New(DiceType type)
+    [ServerRpc]
+    public void NewDiceServerRpc(DiceType type)
     {
-        var die = diceManager.MakeDie(type, parent: transform, position: SpawnPoint.position);
+        var die = diceManager.MakeDie(type, parent: this.transform, position: SpawnPoint.position);
     }
 
     DiceScript[] Children()
@@ -43,7 +48,7 @@ public class DiceContainer : MonoBehaviour
         }
     }
 
-    public (int, string) Total()
+    public (int total, string breakdown) Total()
     {
         var sum = 0;
         var dice = Children();
@@ -59,7 +64,7 @@ public class DiceContainer : MonoBehaviour
 
         for (var i = 0; i < dice.Length; i++)
         {
-            if (!dice[i].IsStatic())
+            if (!dice[i].IsStatic)
             {
                 continue;
             }
@@ -75,36 +80,36 @@ public class DiceContainer : MonoBehaviour
 
     public void D4()
     {
-        New(DiceType.D4);
+        NewDiceServerRpc(DiceType.D4);
     }
 
     public void D6()
     {
-        New(DiceType.D6);
+        NewDiceServerRpc(DiceType.D6);
     }
 
     public void D8()
     {
-        New(DiceType.D8);
+        NewDiceServerRpc(DiceType.D8);
     }
 
     public void D10()
     {
-        New(DiceType.D10);
+        NewDiceServerRpc(DiceType.D10);
     }
 
     public void D12()
     {
-        New(DiceType.D12);
+        NewDiceServerRpc(DiceType.D12);
     }
 
     public void D20()
     {
-        New(DiceType.D20);
+        NewDiceServerRpc(DiceType.D20);
     }
 
     public void D100()
     {
-        New(DiceType.D100);
+        NewDiceServerRpc(DiceType.D100);
     }
 }

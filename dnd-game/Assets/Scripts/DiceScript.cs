@@ -8,11 +8,20 @@ using UnityEngine;
 
 public class DiceScript : NetworkBehaviour
 {
-    public NetworkVariable<DiceType> Type;
-
+    NetworkVariable<DiceType> type;
     Outline outline;
     Rigidbody rb;
     NetworkVariable<bool> isStatic;
+
+    public DiceType Type
+    {
+        get => type.Value;
+    }
+
+    public bool IsStatic
+    {
+        get => isStatic.Value;
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -71,11 +80,6 @@ public class DiceScript : NetworkBehaviour
 
     public int Result()
     {
-        return DiceManager.Instance.GetResultOf(Type.Value, transform);
-    }
-
-    public bool IsStatic()
-    {
-        return isStatic.Value;
+        return DiceManager.Instance.GetResultOf(type.Value, transform);
     }
 }
