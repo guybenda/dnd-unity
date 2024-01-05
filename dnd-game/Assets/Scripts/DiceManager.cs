@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using DndCommon;
+using Unity.Netcode;
 using UnityEngine;
 
 public class DiceManager : MonoBehaviour
@@ -88,18 +89,11 @@ public class DiceManager : MonoBehaviour
     public GameObject MakeDie(DiceType type, int? materialIndex = null, Vector3? position = null, Transform parent = null)
     {
         var die = instantiateDie(type, position, parent);
+        die.GetComponent<NetworkObject>().Spawn();
+        var diceScript = die.GetComponent<DiceScript>();
 
-        Material material;
-        if (materialIndex.HasValue)
-        {
-            material = diceMaterials[materialIndex.Value];
-        }
-        else
-        {
-            material = diceMaterials[Random.Range(0, diceMaterials.Length)];
-        }
-
-        die.GetComponent<MeshRenderer>().material = material;
+        diceScript.materialId.Value = materialIndex ?? Random.Range(0, diceMaterials.Length);
+        diceScript.Type = type;
 
         return die;
     }
@@ -112,6 +106,8 @@ public class DiceManager : MonoBehaviour
         {
             vertices[type] = prefab.GetComponent<MeshCollider>().sharedMesh.vertices;
         }
+
+        facepoints = new();
 
         {
             var v = vertices[DiceType.D4];
@@ -249,6 +245,11 @@ public class DiceManager : MonoBehaviour
     public void MakeRandom()
     {
         var die = MakeDie(getRandomDiceType(), position: new(0, 2, 0));
+    }
+
+    public Material MaterialByIndex(int index)
+    {
+        return diceMaterials[index];
     }
 }
 

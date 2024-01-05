@@ -22,7 +22,7 @@ public class DiceContainer : NetworkBehaviour
 
     }
 
-    void Awake()
+    public override void OnNetworkSpawn()
     {
         if (!IsServer) return;
 

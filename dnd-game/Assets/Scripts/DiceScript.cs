@@ -8,14 +8,19 @@ using UnityEngine;
 
 public class DiceScript : NetworkBehaviour
 {
-    NetworkVariable<DiceType> type;
+    public NetworkVariable<DiceType> type = new();
+    public NetworkVariable<int> materialId = new();
+
+
     Outline outline;
     Rigidbody rb;
-    NetworkVariable<bool> isStatic;
+    MeshRenderer meshRenderer;
+    NetworkVariable<bool> isStatic = new(false);
 
     public DiceType Type
     {
         get => type.Value;
+        set => type.Value = value;
     }
 
     public bool IsStatic
@@ -42,11 +47,12 @@ public class DiceScript : NetworkBehaviour
         isStatic.Value = rb.velocity.magnitude <= 0.3f && rb.angularVelocity.magnitude <= 0.1f;
     }
 
-    void Awake()
+    public override void OnNetworkSpawn()
     {
         // Init
         rb = gameObject.GetComponent<Rigidbody>();
         outline = gameObject.AddComponent<Outline>();
+        meshRenderer = gameObject.GetComponent<MeshRenderer>();
 
         // Outline
         outline.enabled = false;
@@ -54,12 +60,37 @@ public class DiceScript : NetworkBehaviour
         outline.OutlineColor = Color.white;
         outline.OutlineWidth = 2f;
 
+        SetMaterial(materialId.Value);
+        SetOutline(isStatic.Value);
+
         isStatic.OnValueChanged += OnIsStaticUpdate;
+        materialId.OnValueChanged += OnMaterialIdUpdate;
+
+        if (!IsServer)
+        {
+            rb.isKinematic = true;
+        }
+
     }
 
     void OnIsStaticUpdate(bool prev, bool curr)
     {
-        outline.enabled = curr;
+        SetOutline(curr);
+    }
+
+    void SetOutline(bool value)
+    {
+        outline.enabled = value;
+    }
+
+    void OnMaterialIdUpdate(int prev, int curr)
+    {
+        SetMaterial(curr);
+    }
+
+    void SetMaterial(int value)
+    {
+        meshRenderer.material = DiceManager.Instance.MaterialByIndex(value);
     }
 
 
@@ -80,6 +111,6 @@ public class DiceScript : NetworkBehaviour
 
     public int Result()
     {
-        return DiceManager.Instance.GetResultOf(type.Value, transform);
+        return DiceManager.Instance.GetResultOf(Type, transform);
     }
 }

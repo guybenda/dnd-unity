@@ -5,6 +5,7 @@ using TMPro;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using Unity.Networking.Transport;
+using UnityEditor.SearchService;
 using UnityEngine;
 
 public class MainMenuScript : MonoBehaviour
@@ -28,6 +29,10 @@ public class MainMenuScript : MonoBehaviour
     public void OnClickConnect()
     {
         var ip = GetComponentInChildren<TMP_InputField>().text;
+        if (string.IsNullOrWhiteSpace(ip))
+        {
+            ip = "127.0.0.1";
+        }
 
         if (!ipRegex.IsMatch(ip)) return;
 
@@ -39,6 +44,7 @@ public class MainMenuScript : MonoBehaviour
         if (!NetworkManager.Singleton.StartClient())
         {
             GameObject.Find("Error").GetComponent<TMP_Text>().text = "Failed to connect to server";
+            return;
         }
     }
 
@@ -53,7 +59,10 @@ public class MainMenuScript : MonoBehaviour
         if (!NetworkManager.Singleton.StartHost())
         {
             GameObject.Find("Error").GetComponent<TMP_Text>().text = "Failed to start host";
+            return;
         }
+
+        NetworkManager.Singleton.SceneManager.LoadScene("GameScene", UnityEngine.SceneManagement.LoadSceneMode.Single);
     }
 
 }
