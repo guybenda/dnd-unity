@@ -1801,8 +1801,8 @@ MonoBehaviour:
     Port: 42069
     ServerListenAddress: 127.0.0.1
   DebugSimulator:
-    PacketDelayMS: 50
-    PacketJitterMS: 5
+    PacketDelayMS: 0
+    PacketJitterMS: 0
     PacketDropRate: 0
 --- !u!1 &7241610443829944394
 GameObject:

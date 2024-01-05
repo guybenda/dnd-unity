@@ -8,6 +8,8 @@ using UnityEngine;
 
 public class DiceContainer : NetworkBehaviour
 {
+    NetworkVariable<int> id = new(-1);
+
     public Transform SpawnPoint;
 
     DiceManager diceManager;
@@ -27,25 +29,43 @@ public class DiceContainer : NetworkBehaviour
         if (!IsServer) return;
 
         diceManager = GameObject.FindGameObjectWithTag("DiceManager").GetComponent<DiceManager>();
+        id.Value = Random.Range(0, int.MaxValue);
     }
 
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     public void NewDiceServerRpc(DiceType type)
     {
-        var die = diceManager.MakeDie(type, parent: this.transform, position: SpawnPoint.position);
+        var die = diceManager.MakeDie(type, parent: this.transform, position: SpawnPoint.position, containerId: id.Value);
     }
 
-    DiceScript[] Children()
+    GameObject[] Children()
     {
-        return GetComponentsInChildren<DiceScript>();
+        var dice = GameObject.FindGameObjectsWithTag("Dice");
+        var children = new List<GameObject>(dice.Length);
+
+        for (int i = 0; i < dice.Length; i++)
+        {
+            if (dice[i].GetComponent<DiceScript>().Container == id.Value)
+            {
+                children.Add(dice[i]);
+            }
+        }
+
+        return children.ToArray();
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void ClearServerRpc()
+    {
+        foreach (var child in Children())
+        {
+            child.gameObject.GetComponent<NetworkObject>().Despawn();
+        }
     }
 
     public void Clear()
     {
-        foreach (var child in Children())
-        {
-            Destroy(child.gameObject);
-        }
+        ClearServerRpc();
     }
 
     public (int total, string breakdown) Total()
@@ -64,13 +84,14 @@ public class DiceContainer : NetworkBehaviour
 
         for (var i = 0; i < dice.Length; i++)
         {
-            if (!dice[i].IsStatic)
+            var die = dice[i].GetComponent<DiceScript>();
+            if (!die.IsStatic)
             {
                 continue;
             }
 
-            sum += dice[i].Result();
-            counts[dice[i].Type]++;
+            sum += die.Result();
+            counts[die.Type]++;
         }
 
         var countStr = string.Join(" + ", counts.Where(a => a.Value > 0).Select(a => $"{a.Value}d{(int)a.Key}"));

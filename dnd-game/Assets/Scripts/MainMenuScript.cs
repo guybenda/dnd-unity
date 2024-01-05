@@ -4,8 +4,6 @@ using System.Text.RegularExpressions;
 using TMPro;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
-using Unity.Networking.Transport;
-using UnityEditor.SearchService;
 using UnityEngine;
 
 public class MainMenuScript : MonoBehaviour

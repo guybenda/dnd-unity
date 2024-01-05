@@ -8,8 +8,9 @@ using UnityEngine;
 
 public class DiceScript : NetworkBehaviour
 {
-    public NetworkVariable<DiceType> type = new();
-    public NetworkVariable<int> materialId = new();
+    public DiceType type;
+    public int materialId;
+    public int container;
 
 
     Outline outline;
@@ -19,8 +20,20 @@ public class DiceScript : NetworkBehaviour
 
     public DiceType Type
     {
-        get => type.Value;
-        set => type.Value = value;
+        get => type;
+        set => type = value;
+    }
+
+    public int MaterialId
+    {
+        get => materialId;
+        set => materialId = value;
+    }
+
+    public int Container
+    {
+        get => container;
+        set => container = value;
     }
 
     public bool IsStatic
@@ -47,26 +60,41 @@ public class DiceScript : NetworkBehaviour
         isStatic.Value = rb.velocity.magnitude <= 0.3f && rb.angularVelocity.magnitude <= 0.1f;
     }
 
+    protected override void OnSynchronize<T>(ref BufferSerializer<T> serializer)
+    {
+        serializer.SerializeValue(ref type);
+        serializer.SerializeValue(ref materialId);
+        serializer.SerializeValue(ref container);
+        base.OnSynchronize(ref serializer);
+    }
+
     public override void OnNetworkSpawn()
     {
         // Init
         rb = gameObject.GetComponent<Rigidbody>();
-        outline = gameObject.AddComponent<Outline>();
         meshRenderer = gameObject.GetComponent<MeshRenderer>();
 
+        gameObject.GetComponent<MeshFilter>().mesh = DiceManager.Instance.DieMesh(Type);
+        SetMaterial(MaterialId);
+
         // Outline
+        outline = gameObject.AddComponent<Outline>();
         outline.enabled = false;
         outline.OutlineMode = Outline.Mode.OutlineVisible;
         outline.OutlineColor = Color.white;
         outline.OutlineWidth = 2f;
-
-        SetMaterial(materialId.Value);
         SetOutline(isStatic.Value);
 
-        isStatic.OnValueChanged += OnIsStaticUpdate;
-        materialId.OnValueChanged += OnMaterialIdUpdate;
 
-        if (!IsServer)
+        // Events
+        isStatic.OnValueChanged += OnIsStaticUpdate;
+        // materialId.OnValueChanged += OnMaterialIdUpdate;
+
+        if (IsServer)
+        {
+            gameObject.GetComponent<MeshCollider>().sharedMesh = DiceManager.Instance.DieColliderMesh(Type);
+        }
+        else
         {
             rb.isKinematic = true;
         }

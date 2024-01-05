@@ -8,6 +8,8 @@ public class UIManager : MonoBehaviour
     TextMeshProUGUI resultText;
     DiceContainer diceContainer;
 
+    int counter = 0;
+
 
     void Start()
     {
@@ -27,6 +29,9 @@ public class UIManager : MonoBehaviour
 
     void FixedUpdate()
     {
+        counter = (counter + 1) % 10;
+        if (counter != 0) return;
+
         var (total, breakdown) = diceContainer.Total();
 
         if (breakdown == "")

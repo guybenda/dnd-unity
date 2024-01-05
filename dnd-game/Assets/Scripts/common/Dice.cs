@@ -13,7 +13,12 @@ namespace DndCommon
         D100 = 100
     }
 
-
+    public enum DiceQuality
+    {
+        Low,
+        Medium,
+        High,
+    }
 
 
     public class Dice

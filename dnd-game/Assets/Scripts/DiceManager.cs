@@ -8,8 +8,11 @@ public class DiceManager : MonoBehaviour
 {
     public static DiceManager Instance { get; private set; }
     Material[] diceMaterials;
+    DiceMap<Mesh> meshesLow;
+    DiceMap<Mesh> meshesMed;
+    DiceMap<Mesh> meshesHigh;
 
-    DiceMap<GameObject> prefabs;
+    GameObject diePrefab;
     DiceMap<Vector3[]> facepoints;
 
 
@@ -38,15 +41,11 @@ public class DiceManager : MonoBehaviour
 
         Instance = this;
 
-        prefabs = new(
-            Resources.Load<GameObject>("Dice/Prefabs/d4"),
-            Resources.Load<GameObject>("Dice/Prefabs/d6"),
-            Resources.Load<GameObject>("Dice/Prefabs/d8"),
-            Resources.Load<GameObject>("Dice/Prefabs/d10"),
-            Resources.Load<GameObject>("Dice/Prefabs/d12"),
-            Resources.Load<GameObject>("Dice/Prefabs/d20"),
-            Resources.Load<GameObject>("Dice/Prefabs/d100")
-        );
+        diePrefab = Resources.Load<GameObject>("Dice/Prefabs/die");
+        meshesLow = DiceMap.FromResources<Mesh>("Dice/Meshes/low");
+        meshesMed = DiceMap.FromResources<Mesh>("Dice/Meshes/med");
+        meshesHigh = DiceMap.FromResources<Mesh>("Dice/Meshes/high");
+
 
         MakeFacePoints();
 
@@ -75,9 +74,7 @@ public class DiceManager : MonoBehaviour
 
     GameObject instantiateDie(DiceType type, Vector3? position = null, Transform parent = null)
     {
-        GameObject dieFab = prefabs[type];
-
-        var die = Instantiate(dieFab, position ?? Vector3.zero, getRandomRotation(), parent);
+        var die = Instantiate(diePrefab, position ?? Vector3.zero, getRandomRotation(), parent);
 
         var rb = die.GetComponent<Rigidbody>();
         rb.angularVelocity = getRandomAngularVelocity();
@@ -86,14 +83,17 @@ public class DiceManager : MonoBehaviour
         return die;
     }
 
-    public GameObject MakeDie(DiceType type, int? materialIndex = null, Vector3? position = null, Transform parent = null)
+    public GameObject MakeDie(DiceType type, int? materialIndex = null, Vector3? position = null, Transform parent = null, int containerId = -1)
     {
         var die = instantiateDie(type, position, parent);
-        die.GetComponent<NetworkObject>().Spawn();
+
         var diceScript = die.GetComponent<DiceScript>();
 
-        diceScript.materialId.Value = materialIndex ?? Random.Range(0, diceMaterials.Length);
+        diceScript.MaterialId = materialIndex ?? Random.Range(0, diceMaterials.Length);
         diceScript.Type = type;
+        diceScript.Container = containerId;
+
+        die.GetComponent<NetworkObject>().Spawn();
 
         return die;
     }
@@ -102,9 +102,9 @@ public class DiceManager : MonoBehaviour
     {
         DiceMap<Vector3[]> vertices = new();
 
-        foreach (var (type, prefab) in prefabs.m)
+        foreach (var (type, mesh) in meshesLow.m)
         {
-            vertices[type] = prefab.GetComponent<MeshCollider>().sharedMesh.vertices;
+            vertices[type] = mesh.vertices;
         }
 
         facepoints = new();
@@ -251,6 +251,22 @@ public class DiceManager : MonoBehaviour
     {
         return diceMaterials[index];
     }
+
+    public Mesh DieMesh(DiceType type, DiceQuality quality = DiceQuality.High)
+    {
+        return quality switch
+        {
+            DiceQuality.Low => meshesLow[type],
+            DiceQuality.Medium => meshesMed[type],
+            DiceQuality.High => meshesHigh[type],
+            _ => null
+        };
+    }
+
+    public Mesh DieColliderMesh(DiceType type)
+    {
+        return meshesLow[type];
+    }
 }
 
 public class DiceMap<V>
@@ -282,5 +298,21 @@ public class DiceMap<V>
         {
             m[type] = value;
         }
+    }
+}
+
+public class DiceMap
+{
+    public static DiceMap<T> FromResources<T>(string path) where T : Object
+    {
+        return new DiceMap<T>(
+            Resources.Load<T>($"{path}/d4"),
+            Resources.Load<T>($"{path}/d6"),
+            Resources.Load<T>($"{path}/d8"),
+            Resources.Load<T>($"{path}/d10"),
+            Resources.Load<T>($"{path}/d12"),
+            Resources.Load<T>($"{path}/d20"),
+            Resources.Load<T>($"{path}/d100")
+        );
     }
 }
