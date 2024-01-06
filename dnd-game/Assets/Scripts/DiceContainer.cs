@@ -133,4 +133,13 @@ public class DiceContainer : NetworkBehaviour
     {
         NewDiceServerRpc(DiceType.D100);
     }
+
+    IEnumerator test()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(0.05f);
+            NewDiceServerRpc(DiceType.D10);
+        }
+    }
 }
