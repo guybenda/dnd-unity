@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using DndCommon;
 using Unity.Netcode;
 using UnityEngine;
@@ -16,7 +17,7 @@ public class DiceManager : MonoBehaviour
     DiceMap<Vector3[]> facepoints;
 
 
-    readonly Vector3 startingVelocity = new(0, 2, 0);
+    // readonly Vector3 startingVelocity = new(0, 2, 0);
 
     // Start is called before the first frame update
     void Start()
@@ -69,33 +70,41 @@ public class DiceManager : MonoBehaviour
 
     Vector3 getRandomVelocity()
     {
-        return startingVelocity + Random.insideUnitSphere * 2;
+        return Random.insideUnitSphere * 1.5f;
     }
 
-    GameObject instantiateDie(DiceType type, Vector3? position = null, Transform parent = null)
+    GameObject instantiateDie(Vector3 position)
     {
-        var die = Instantiate(diePrefab, position ?? Vector3.zero, getRandomRotation(), parent);
-
-        var rb = die.GetComponent<Rigidbody>();
-        rb.angularVelocity = getRandomAngularVelocity();
-        rb.velocity = getRandomVelocity();
+        var die = Instantiate(diePrefab, position, getRandomRotation());
 
         return die;
     }
 
-    public GameObject MakeDie(DiceType type, int? materialIndex = null, Vector3? position = null, Transform parent = null, int containerId = -1)
+    public GameObject MakeDie(DiceType type, int materialIndex = -1, Vector3 position = default, Vector3 velocity = default, int containerId = -1)
     {
-        var die = instantiateDie(type, position, parent);
+        var die = instantiateDie(position);
 
         var diceScript = die.GetComponent<DiceScript>();
 
-        diceScript.MaterialId = materialIndex ?? Random.Range(0, diceMaterials.Length);
+        diceScript.MaterialId = materialIndex == -1 ? Random.Range(0, diceMaterials.Length) : materialIndex;
         diceScript.Type = type;
         diceScript.Container = containerId;
+
+        var rb = die.GetComponent<Rigidbody>();
+        rb.angularVelocity = getRandomAngularVelocity();
+        rb.velocity = getRandomVelocity() + velocity;
 
         die.GetComponent<NetworkObject>().Spawn();
 
         return die;
+    }
+
+    public void ResetDicePosition(GameObject die, Vector3 position)
+    {
+        die.transform.position = position;
+
+        var rb = die.GetComponent<Rigidbody>();
+        rb.angularVelocity = getRandomAngularVelocity();
     }
 
     void MakeFacePoints()

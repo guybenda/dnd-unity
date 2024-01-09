@@ -8,9 +8,13 @@ using UnityEngine;
 
 public class DiceContainer : NetworkBehaviour
 {
+    readonly Vector3 startingVelocity = new(0, 5, 0);
+
     NetworkVariable<int> id = new(-1);
 
-    public Transform SpawnPoint;
+    // public List<DiceOrigin> SpawnPoints = new();
+    // public bool RandomSpawnPoints = true;
+    public Transform Target;
 
     DiceManager diceManager;
 
@@ -32,10 +36,23 @@ public class DiceContainer : NetworkBehaviour
         id.Value = Random.Range(0, int.MaxValue);
     }
 
+    Vector3 GetRandomOrigin()
+    {
+        return Target.transform.position + new Vector3(Random.Range(-8f, 8f), 5, Random.Range(-8f, 8f));
+        // if (RandomSpawnPoints) {
+        //     return 
+        // }
+
+        // return SpawnPoints[Random.Range(0, SpawnPoints.Count)];
+    }
+
     [ServerRpc(RequireOwnership = false)]
     public void NewDiceServerRpc(DiceType type)
     {
-        var die = diceManager.MakeDie(type, parent: this.transform, position: SpawnPoint.position, containerId: id.Value);
+        var origin = GetRandomOrigin();
+        var velocity = startingVelocity + (Target.position - origin) * 1.5f;
+
+        var die = diceManager.MakeDie(type, position: origin, containerId: id.Value, velocity: velocity);
     }
 
     GameObject[] Children()
@@ -67,6 +84,8 @@ public class DiceContainer : NetworkBehaviour
     {
         ClearServerRpc();
     }
+
+
 
     public (int total, string breakdown) Total()
     {

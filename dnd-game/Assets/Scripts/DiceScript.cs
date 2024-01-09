@@ -141,4 +141,13 @@ public class DiceScript : NetworkBehaviour
     {
         return DiceManager.Instance.GetResultOf(Type, transform);
     }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (!IsServer) return;
+
+        var position = other.GetComponentInParent<DiceContainer>().Target.position;
+
+        DiceManager.Instance.ResetDicePosition(this.gameObject, position);
+    }
 }
