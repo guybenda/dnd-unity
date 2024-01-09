@@ -1,22 +1,11 @@
 {
 	"hosting": {
-		"public": "dnd-game/Builds/Web",
+		"public": "dnd-game/Builds/Web/Build",
 		"ignore": ["**/.*"],
 		"rewrites": [
 			{
 				"source": "**",
 				"destination": "/index.html"
-			}
-		],
-		"headers": [
-			{
-				"source": "**/*.br",
-				"headers": [
-					{
-						"key": "Content-Encoding",
-						"value": "br"
-					}
-				]
 			}
 		]
 	}
