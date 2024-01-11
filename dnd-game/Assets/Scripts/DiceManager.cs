@@ -16,9 +16,6 @@ public class DiceManager : MonoBehaviour
     GameObject diePrefab;
     DiceMap<Vector3[]> facepoints;
 
-
-    // readonly Vector3 startingVelocity = new(0, 2, 0);
-
     // Start is called before the first frame update
     void Start()
     {
