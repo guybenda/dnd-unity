@@ -43,9 +43,9 @@ public class DiceScript : NetworkBehaviour
 
     protected override void OnSynchronize<T>(ref BufferSerializer<T> serializer)
     {
-        serializer.SerializeValue(ref type);
-        serializer.SerializeValue(ref materialId);
-        serializer.SerializeValue(ref container);
+        serializer.SerializeValue(ref Type);
+        serializer.SerializeValue(ref MaterialId);
+        serializer.SerializeValue(ref Container);
         base.OnSynchronize(ref serializer);
     }
 
