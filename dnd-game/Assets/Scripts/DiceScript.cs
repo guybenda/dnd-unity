@@ -57,7 +57,7 @@ public class DiceScript : NetworkBehaviour
     {
         if (!IsServer) return;
 
-        isStatic.Value = rb.velocity.magnitude <= 0.3f && rb.angularVelocity.magnitude <= 0.1f;
+        isStatic.Value = rb.velocity.magnitude <= 0.1f && rb.angularVelocity.magnitude <= 0.05f;
     }
 
     protected override void OnSynchronize<T>(ref BufferSerializer<T> serializer)
@@ -82,7 +82,7 @@ public class DiceScript : NetworkBehaviour
         outline.enabled = false;
         outline.OutlineMode = Outline.Mode.OutlineVisible;
         outline.OutlineColor = Color.white;
-        outline.OutlineWidth = 2f;
+        outline.OutlineWidth = 1f;
         SetOutline(isStatic.Value);
 
 
