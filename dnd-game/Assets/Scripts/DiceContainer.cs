@@ -12,8 +12,6 @@ public class DiceContainer : NetworkBehaviour
 
     NetworkVariable<int> id = new(-1);
 
-    // public List<DiceOrigin> SpawnPoints = new();
-    // public bool RandomSpawnPoints = true;
     public Transform Target;
 
     DiceManager diceManager;
@@ -39,11 +37,6 @@ public class DiceContainer : NetworkBehaviour
     Vector3 GetRandomOrigin()
     {
         return Target.transform.position + new Vector3(Random.Range(-8f, 8f), 5, Random.Range(-8f, 8f));
-        // if (RandomSpawnPoints) {
-        //     return 
-        // }
-
-        // return SpawnPoints[Random.Range(0, SpawnPoints.Count)];
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -151,14 +144,5 @@ public class DiceContainer : NetworkBehaviour
     public void D100()
     {
         NewDiceServerRpc(DiceType.D100);
-    }
-
-    IEnumerator test()
-    {
-        while (true)
-        {
-            yield return new WaitForSeconds(0.05f);
-            NewDiceServerRpc(DiceType.D10);
-        }
     }
 }
