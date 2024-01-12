@@ -17,6 +17,19 @@ public class DiceScript : NetworkBehaviour
     MeshRenderer meshRenderer;
     NetworkVariable<bool> isStatic = new(false);
 
+    bool shouldUpdateOutline = true;
+
+    bool m_isHovered;
+    public bool IsHovered
+    {
+        get => m_isHovered;
+        set
+        {
+            m_isHovered = value;
+            shouldUpdateOutline = true;
+        }
+    }
+
     public bool IsStatic
     {
         get => isStatic.Value;
@@ -31,6 +44,32 @@ public class DiceScript : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (shouldUpdateOutline)
+        {
+            UpdateOutline();
+            shouldUpdateOutline = false;
+        }
+    }
+
+    void UpdateOutline()
+    {
+        // Color
+        if (IsHovered)
+        {
+            outline.OutlineColor = Color.red;
+            outline.OutlineWidth = 5f;
+        }
+        else
+        {
+            outline.OutlineColor = Color.white;
+            outline.OutlineWidth = 1f;
+        }
+
+        // Type
+        outline.OutlineMode = IsHovered ? Outline.Mode.OutlineAll : Outline.Mode.OutlineVisible;
+
+        // Enabled
+        outline.enabled = IsStatic || IsHovered;
 
     }
 
@@ -61,18 +100,15 @@ public class DiceScript : NetworkBehaviour
         // Outline
         outline = gameObject.AddComponent<Outline>();
         outline.enabled = false;
-        outline.OutlineMode = Outline.Mode.OutlineVisible;
-        outline.OutlineColor = Color.white;
-        outline.OutlineWidth = 1f;
-        SetOutline(isStatic.Value);
-
 
         // Events
         isStatic.OnValueChanged += OnIsStaticUpdate;
 
+        gameObject.GetComponent<MeshCollider>().sharedMesh = DiceManager.Instance.DieColliderMesh(Type);
+
         if (IsServer)
         {
-            gameObject.GetComponent<MeshCollider>().sharedMesh = DiceManager.Instance.DieColliderMesh(Type);
+
         }
         else
         {
@@ -83,17 +119,7 @@ public class DiceScript : NetworkBehaviour
 
     void OnIsStaticUpdate(bool prev, bool curr)
     {
-        SetOutline(curr);
-    }
-
-    void SetOutline(bool value)
-    {
-        outline.enabled = value;
-    }
-
-    void OnMaterialIdUpdate(int prev, int curr)
-    {
-        SetMaterial(curr);
+        shouldUpdateOutline = true;
     }
 
     void SetMaterial(int value)

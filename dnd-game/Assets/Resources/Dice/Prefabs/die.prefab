@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 54977493419179528}
   - component: {fileID: 7155831981491618515}
   - component: {fileID: 6559151351829070857}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: die
   m_TagString: Dice
   m_Icon: {fileID: 0}
@@ -170,9 +170,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c94016519164aa143ac44dcbeac62152, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  type: 0
-  materialId: 0
-  container: 0
+  Type: 0
+  MaterialId: 0
+  Container: 0
 --- !u!114 &6559151351829070857
 MonoBehaviour:
   m_ObjectHideFlags: 0
