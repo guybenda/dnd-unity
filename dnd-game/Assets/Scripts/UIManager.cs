@@ -27,6 +27,7 @@ public class UIManager : MonoBehaviour
         cam = Camera.main;
 
         diceMask = LayerMask.GetMask("Dice");
+
     }
 
     void Update()

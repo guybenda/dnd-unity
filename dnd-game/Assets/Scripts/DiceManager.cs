@@ -8,6 +8,7 @@ using UnityEngine;
 public class DiceManager : MonoBehaviour
 {
     public static DiceManager Instance { get; private set; }
+
     Material[] diceMaterials;
     DiceMap<Mesh> meshesLow;
     DiceMap<Mesh> meshesMed;
@@ -53,11 +54,6 @@ public class DiceManager : MonoBehaviour
     Quaternion getRandomRotation()
     {
         return Quaternion.Euler(Random.Range(0, 360), Random.Range(0, 360), Random.Range(0, 360));
-    }
-
-    DiceType getRandomDiceType()
-    {
-        return Dice.types[Random.Range(0, 7)];
     }
 
     Vector3 getRandomAngularVelocity()
@@ -241,16 +237,6 @@ public class DiceManager : MonoBehaviour
         }
 
         return lowestIdx + 1;
-    }
-
-    public void MakeD6()
-    {
-        var die = MakeDie(DiceType.D6, position: new(0, 3, 0));
-    }
-
-    public void MakeRandom()
-    {
-        var die = MakeDie(getRandomDiceType(), position: new(0, 2, 0));
     }
 
     public Material MaterialByIndex(int index)
