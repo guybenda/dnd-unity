@@ -33,6 +33,7 @@ public class DndFirebaseAuth : MonoBehaviour
         else
         {
             Destroy(this);
+            return;
         }
 
         DontDestroyOnLoad(this);

@@ -14,8 +14,6 @@ public class DiceContainer : NetworkBehaviour
 
     public Transform Target;
 
-    DiceManager diceManager;
-
     void Start()
     {
 
@@ -30,7 +28,6 @@ public class DiceContainer : NetworkBehaviour
     {
         if (!IsServer) return;
 
-        diceManager = GameObject.FindGameObjectWithTag("DiceManager").GetComponent<DiceManager>();
         id.Value = Random.Range(0, int.MaxValue);
     }
 
@@ -45,7 +42,7 @@ public class DiceContainer : NetworkBehaviour
         var origin = GetRandomOrigin();
         var velocity = startingVelocity + (Target.position - origin) * 1.5f;
 
-        var die = diceManager.MakeDie(type, position: origin, containerId: id.Value, velocity: velocity);
+        var die = DiceManager.Instance.MakeDie(type, position: origin, containerId: id.Value, velocity: velocity);
     }
 
     GameObject[] Children()

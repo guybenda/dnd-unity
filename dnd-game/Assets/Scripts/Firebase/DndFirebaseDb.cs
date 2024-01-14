@@ -32,6 +32,7 @@ public class DndFirebaseDb : MonoBehaviour
         else
         {
             Destroy(this);
+            return;
         }
 
         DontDestroyOnLoad(this);

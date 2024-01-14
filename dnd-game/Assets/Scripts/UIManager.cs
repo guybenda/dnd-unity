@@ -37,7 +37,6 @@ public class UIManager : MonoBehaviour
 
         var prevHighlightedDice = highlightedDice;
 
-        Debug.DrawRay(ray.origin, ray.direction * 20f, Color.red);
         if (Physics.Raycast(ray, out var hit, 20f, diceMask))
         {
             highlightedDice = hit.collider.gameObject.GetComponent<DiceScript>();

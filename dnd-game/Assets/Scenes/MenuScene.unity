@@ -1817,13 +1817,26 @@ GameObject:
   - component: {fileID: 4574023384939151241}
   - component: {fileID: 5483000790244121485}
   - component: {fileID: 6057089703106362655}
+  - component: {fileID: 7241610443829944395}
   m_Layer: 0
-  m_Name: NetworkManager
+  m_Name: EverythingManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &7241610443829944395
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7241610443829944394}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fbd183cd062e614ba9d5a7bb734e7dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

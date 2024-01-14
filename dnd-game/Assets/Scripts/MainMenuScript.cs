@@ -5,6 +5,7 @@ using TMPro;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class MainMenuScript : MonoBehaviour
 {
@@ -44,6 +45,8 @@ public class MainMenuScript : MonoBehaviour
             GameObject.Find("Error").GetComponent<TMP_Text>().text = "Failed to connect to server";
             return;
         }
+
+        SceneTransitionManager.Instance.RegisterDisconnectCallback();
     }
 
     public void OnClickHost()
@@ -60,7 +63,6 @@ public class MainMenuScript : MonoBehaviour
             return;
         }
 
-        NetworkManager.Singleton.SceneManager.LoadScene("GameScene", UnityEngine.SceneManagement.LoadSceneMode.Single);
+        NetworkManager.Singleton.SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
     }
-
 }
