@@ -1,3 +1,4 @@
+using DndFirebase;
 using UnityEngine;
 
 public class EverythingManager : MonoBehaviour

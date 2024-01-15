@@ -5,40 +5,45 @@ using System.Threading.Tasks;
 using Firebase.Firestore;
 using UnityEngine;
 
-public class DndFirebaseDb : MonoBehaviour
+namespace DndFirebase
 {
-    public static DndFirebaseDb Instance { get; private set; }
 
-    FirebaseFirestore db;
-
-    // Start is called before the first frame update
-    void Start()
+    public class DndFirebaseDb : MonoBehaviour
     {
+        public static DndFirebaseDb Instance { get; private set; }
 
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
+        FirebaseFirestore db;
 
-    }
-
-    void Awake()
-    {
-        if (Instance == null)
+        // Start is called before the first frame update
+        void Start()
         {
-            Instance = this;
-        }
-        else
-        {
-            Destroy(this);
-            return;
+
         }
 
-        DontDestroyOnLoad(this);
+        // Update is called once per frame
+        void Update()
+        {
 
-        db = FirebaseFirestore.DefaultInstance;
+        }
+
+        void Awake()
+        {
+            if (Instance == null)
+            {
+                Instance = this;
+            }
+            else
+            {
+                Destroy(this);
+                return;
+            }
+
+            DontDestroyOnLoad(this);
+
+            db = FirebaseFirestore.DefaultInstance;
+        }
+
+
     }
-
-
 }
