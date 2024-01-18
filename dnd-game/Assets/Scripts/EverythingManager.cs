@@ -17,10 +17,9 @@ public class EverythingManager : MonoBehaviour
 
         DontDestroyOnLoad(this);
 
-        // All of these should be relatively stateless
         gameObject.AddComponent<DiceManager>();
-        gameObject.AddComponent<DndFirebaseAuth>();
-        gameObject.AddComponent<DndFirebaseDb>();
+        gameObject.AddComponent<AuthManager>();
+        gameObject.AddComponent<DndFirestore>();
         gameObject.AddComponent<SceneTransitionManager>();
     }
 }

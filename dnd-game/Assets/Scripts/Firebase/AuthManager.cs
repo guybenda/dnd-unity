@@ -8,23 +8,12 @@ using UnityEngine;
 
 namespace DndFirebase
 {
-    public class DndFirebaseAuth : MonoBehaviour
+    public class AuthManager : MonoBehaviour
     {
-        public static DndFirebaseAuth Instance { get; private set; }
+        public static AuthManager Instance { get; private set; }
+        public User CurrentUser { get; private set; }
 
         FirebaseAuth auth;
-
-        // Start is called before the first frame update
-        void Start()
-        {
-
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-
-        }
 
         void Awake()
         {
@@ -48,12 +37,24 @@ namespace DndFirebase
             try
             {
                 AuthResult result = await auth.CreateUserWithEmailAndPasswordAsync(email, password);
-                FirebaseUser user = result.User;
+                FirebaseUser fbUser = result.User;
 
-                await user.UpdateUserProfileAsync(new()
+                await fbUser.UpdateUserProfileAsync(new()
                 {
                     DisplayName = displayName
                 });
+
+                var user = new User
+                {
+                    DisplayName = displayName,
+                    Email = email,
+                    Dice = UserDice.Default()
+                };
+
+                await user.Save();
+
+                CurrentUser = user;
+
             }
             catch (Exception e)
             {
@@ -69,6 +70,10 @@ namespace DndFirebase
             try
             {
                 var result = await auth.SignInWithEmailAndPasswordAsync(email, password);
+                var user = await User.Get(result.User.Email);
+                user.DisplayName = result.User.DisplayName;
+
+                CurrentUser = user;
             }
             catch (Exception e)
             {
@@ -84,6 +89,7 @@ namespace DndFirebase
             try
             {
                 auth.SignOut();
+                CurrentUser = null;
             }
             catch (Exception e)
             {

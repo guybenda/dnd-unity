@@ -1,9 +1,12 @@
 
+using System;
+using System.Threading.Tasks;
+using DndFirebase;
 using Firebase.Firestore;
 using Unity.Netcode;
 using UnityEngine;
 
-public struct User : INetworkSerializable
+public class User : INetworkSerializable
 {
     public string DisplayName;
     public string Email;
@@ -15,6 +18,36 @@ public struct User : INetworkSerializable
         serializer.SerializeValue(ref Email);
         serializer.SerializeValue(ref Dice);
     }
+
+    public User() { }
+
+    public static async Task<User> Get(string email)
+    {
+        var dbUser = await UserFirebase.Get(email);
+        return new User(dbUser);
+    }
+
+    public async Task Save()
+    {
+        await ToDbUser(this).Save();
+    }
+
+    public User(UserFirebase dbUser)
+    {
+        DisplayName = dbUser.DisplayName;
+        Email = dbUser.Email;
+        Dice = UserDice.FromString(dbUser.Dice);
+    }
+
+    public UserFirebase ToDbUser(User user)
+    {
+        return new UserFirebase
+        {
+            DisplayName = user.DisplayName,
+            Email = user.Email,
+            Dice = user.Dice.ToString()
+        };
+    }
 }
 
 [FirestoreData]
@@ -22,33 +55,28 @@ public class UserFirebase
 {
     public const string CollectionName = "users";
 
-    [FirestoreProperty]
     public string DisplayName { get; set; }
 
-    [FirestoreProperty]
     public string Email { get; set; }
 
     [FirestoreProperty]
     public string Dice { get; set; }
 
-    public UserFirebase()
+    static CollectionReference Col()
     {
+        return DndFirestore.Instance.Db.Collection(CollectionName);
     }
 
-    public UserFirebase(User user)
+    public static async Task<UserFirebase> Get(string email)
     {
-        DisplayName = user.DisplayName;
-        Email = user.Email;
-        Dice = user.Dice.ToString();
+        var doc = await Col().Document(email).GetSnapshotAsync();
+        var user = doc.ConvertTo<UserFirebase>();
+        user.Email = email;
+        return user;
     }
 
-    public User ToUser()
+    public async Task Save()
     {
-        return new User
-        {
-            DisplayName = DisplayName,
-            Email = Email,
-            Dice = UserDice.FromString(Dice)
-        };
+        await Col().Document(Email).SetAsync(this);
     }
 }

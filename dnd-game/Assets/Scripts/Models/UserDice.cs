@@ -2,7 +2,7 @@ using Firebase.Firestore;
 using Unity.Netcode;
 using UnityEngine;
 
-public struct UserDice : INetworkSerializable
+public class UserDice : INetworkSerializable
 {
     public Color MainColor;
     public Color SecondaryColor;
@@ -24,11 +24,26 @@ public struct UserDice : INetworkSerializable
     {
         var colors = str.Split('_');
 
+        if (colors.Length != 3)
+        {
+            return Default();
+        }
+
         return new UserDice
         {
             MainColor = ColorUtility.TryParseHtmlString(colors[0], out var mainColor) ? mainColor : Color.white,
             SecondaryColor = ColorUtility.TryParseHtmlString(colors[1], out var secondaryColor) ? secondaryColor : Color.white,
-            NumbersColor = ColorUtility.TryParseHtmlString(colors[2], out var numbersColor) ? numbersColor : Color.white,
+            NumbersColor = ColorUtility.TryParseHtmlString(colors[2], out var numbersColor) ? numbersColor : Color.black,
+        };
+    }
+
+    public static UserDice Default()
+    {
+        return new UserDice
+        {
+            MainColor = Color.white,
+            SecondaryColor = Color.white,
+            NumbersColor = Color.black,
         };
     }
 }

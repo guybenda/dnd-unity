@@ -8,12 +8,12 @@ using UnityEngine;
 namespace DndFirebase
 {
 
-    public class DndFirebaseDb : MonoBehaviour
+    public class DndFirestore : MonoBehaviour
     {
-        public static DndFirebaseDb Instance { get; private set; }
+        public static DndFirestore Instance { get; private set; }
 
+        public FirebaseFirestore Db;
 
-        FirebaseFirestore db;
 
         // Start is called before the first frame update
         void Start()
@@ -41,7 +41,7 @@ namespace DndFirebase
 
             DontDestroyOnLoad(this);
 
-            db = FirebaseFirestore.DefaultInstance;
+            Db = FirebaseFirestore.DefaultInstance;
         }
 
 
