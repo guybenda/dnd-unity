@@ -17,7 +17,7 @@ public class UserDice : INetworkSerializable
 
     public override string ToString()
     {
-        return $"{ColorUtility.ToHtmlStringRGB(MainColor)}_${ColorUtility.ToHtmlStringRGB(MainColor)}_${ColorUtility.ToHtmlStringRGB(MainColor)}";
+        return $"{ColorUtility.ToHtmlStringRGB(MainColor)}_{ColorUtility.ToHtmlStringRGB(MainColor)}_{ColorUtility.ToHtmlStringRGB(MainColor)}";
     }
 
     public static UserDice FromString(string str)

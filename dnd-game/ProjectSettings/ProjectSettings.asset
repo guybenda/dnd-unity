@@ -755,7 +755,8 @@ PlayerSettings:
   webGLWebAssemblyBigInt: 1
   webGLCloseOnQuit: 0
   scriptingDefineSymbols: {}
-  additionalCompilerArguments: {}
+  additionalCompilerArguments:
+    Standalone: []
   platformArchitecture: {}
   scriptingBackend:
     Android: 1
@@ -773,6 +774,7 @@ PlayerSettings:
     PS4: 1
     PS5: 1
     QNX: 1
+    Standalone: 3
     WebGL: 1
     Windows Store Apps: 1
     XboxOne: 1
