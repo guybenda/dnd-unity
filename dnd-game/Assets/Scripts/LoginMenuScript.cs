@@ -55,16 +55,28 @@ public class LoginMenuScript : MonoBehaviour
         ActivateSignUpMenu();
     }
 
-    public void OnClickLogin()
+    public async void OnClickLogin()
     {
+        SetLoader(true);
+
+        var email = InputText(LoginMenu, "Email");
+        var password = InputText(LoginMenu, "Password");
+
+        var (result, error) = await AuthManager.Instance.Login(email, password);
+
+        SetLoader(false);
+
+        if (!result)
+        {
+            SetErrorText("Failed to sign in: " + error);
+        }
+        else
+        {
+            SceneTransitionManager.Instance.MainMenu();
+        }
     }
 
-    public void OnClickSignUp()
-    {
-        _ = Signup();
-    }
-
-    async Task Signup()
+    public async void OnClickSignUp()
     {
         SetLoader(true);
 
@@ -72,13 +84,13 @@ public class LoginMenuScript : MonoBehaviour
         var password = InputText(SignUpMenu, "Password");
         var displayName = InputText(SignUpMenu, "Name");
 
-        var result = await AuthManager.Instance.SignUp(displayName, email, password);
+        var (result, error) = await AuthManager.Instance.SignUp(displayName, email, password);
 
         SetLoader(false);
 
         if (!result)
         {
-            SetErrorText("Failed to sign up");
+            SetErrorText("Failed to sign up: " + error);
         }
         else
         {

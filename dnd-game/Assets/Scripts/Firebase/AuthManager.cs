@@ -32,7 +32,7 @@ namespace DndFirebase
             auth = FirebaseAuth.DefaultInstance;
         }
 
-        public async Task<bool> SignUp(string displayName, string email, string password)
+        public async Task<(bool success, string error)> SignUp(string displayName, string email, string password)
         {
             try
             {
@@ -59,13 +59,13 @@ namespace DndFirebase
             catch (Exception e)
             {
                 Debug.LogException(e);
-                return false;
+                return (false, e.Message);
             }
 
-            return true;
+            return (true, null);
         }
 
-        public async Task<bool> Login(string email, string password)
+        public async Task<(bool success, string error)> Login(string email, string password)
         {
             try
             {
@@ -78,10 +78,10 @@ namespace DndFirebase
             catch (Exception e)
             {
                 Debug.LogException(e);
-                return false;
+                return (false, e.Message);
             }
 
-            return true;
+            return (true, null);
         }
 
         public bool Logout()
