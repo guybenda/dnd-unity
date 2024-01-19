@@ -3,7 +3,8 @@ using UnityEngine;
 
 public class EverythingManager : MonoBehaviour
 {
-    private static EverythingManager Instance;
+    static EverythingManager Instance;
+
     void Awake()
     {
         if (Instance != null)
@@ -14,12 +15,12 @@ public class EverythingManager : MonoBehaviour
         }
 
         Instance = this;
-
         DontDestroyOnLoad(this);
 
         gameObject.AddComponent<DiceManager>();
         gameObject.AddComponent<AuthManager>();
         gameObject.AddComponent<DndFirestore>();
         gameObject.AddComponent<SceneTransitionManager>();
+        gameObject.AddComponent<DiceMaterialManager>();
     }
 }
