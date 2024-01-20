@@ -14,5 +14,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/LoginScene.unity
     guid: 7266497911298594d81b6d1d9e0bb50b
+  - enabled: 1
+    path: Assets/Scenes/DiceCustomizerScene.unity
+    guid: 7bbdb1f1fff553947a7b736c4da34de2
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class UserDice : INetworkSerializable
 {
-    public Color32 MainColor;
-    public Color32 SecondaryColor;
-    public Color32 NumbersColor;
+    public Color MainColor;
+    public Color SecondaryColor;
+    public Color NumbersColor;
     public float Smoothness;
     public bool Metallic;
 
