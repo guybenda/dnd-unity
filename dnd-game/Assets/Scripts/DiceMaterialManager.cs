@@ -11,7 +11,8 @@ public class DiceMaterialManager : MonoBehaviour
 
     readonly Dictionary<UserDice, DiceMaterial> diceMaterials = new();
 
-    Material material;
+    Material diceMaterial;
+    Material diceTextureMaterial;
 
     Texture2D main;
     Texture2D secondary;
@@ -50,7 +51,8 @@ public class DiceMaterialManager : MonoBehaviour
 
         DontDestroyOnLoad(this);
 
-        material = Resources.Load<Material>("Dice/DiceMaterial");
+        diceMaterial = Resources.Load<Material>("Dice/DiceMaterial");
+        diceTextureMaterial = Resources.Load<Material>("Dice/DiceTextureMaterial");
 
         main = Resources.Load<Texture2D>("Dice/Textures/main");
         secondary = Resources.Load<Texture2D>("Dice/Textures/secondary");
@@ -68,38 +70,46 @@ public class DiceMaterialManager : MonoBehaviour
         var diceMat = new DiceMaterial
         {
             userDice = userDice,
-            renderTexture = new RenderTexture(SIZE, SIZE, 0),
-            material = new Material(material),
+            renderTexture = new CustomRenderTexture(SIZE, SIZE, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default)
+            {
+                material = new Material(diceTextureMaterial),
+                initializationMode = CustomRenderTextureUpdateMode.OnLoad,
+                updateMode = CustomRenderTextureUpdateMode.OnDemand,
+
+            },
+            material = new Material(diceMaterial),
         };
 
         // diceMat.renderTexture.Create();
 
         diceMaterials[userDice] = diceMat;
-        material.SetTexture("_MainTex", diceMat.renderTexture);
-
+        diceMat.material.SetTexture("_MainTex", diceMat.renderTexture);
+        diceMat.material.SetTexture("_MetallicGlossMap", userDice.Metallic ? metal : nonmetal);
 
         return diceMat.material;
     }
 
-    public void Draw(UserDice userDice)
+    public Material Draw(UserDice userDice)
     {
-        Stopwatch stopwatch = Stopwatch.StartNew();
+        var diceMat = diceMaterials[userDice];
 
-        var diceMaterial = diceMaterials[userDice];
-
-        if (diceMaterial == null)
+        if (diceMat == null)
         {
             New(userDice);
-            diceMaterial = diceMaterials[userDice];
+            diceMat = diceMaterials[userDice];
         }
 
-        diceMaterial.material.SetFloat("_Glossiness", userDice.Smoothness);
-        diceMaterial.material.SetColor("_Color1", userDice.MainColor);
-        diceMaterial.material.SetColor("_Color2", userDice.SecondaryColor);
-        diceMaterial.material.SetColor("_Color3", userDice.NumbersColor);
+        diceMat.renderTexture.material.SetColor("_Color1", userDice.MainColor);
+        diceMat.renderTexture.material.SetColor("_Color2", userDice.SecondaryColor);
+        diceMat.renderTexture.material.SetColor("_Color3", userDice.NumbersColor);
 
-        stopwatch.Stop();
-        UnityEngine.Debug.Log($"Draw took {stopwatch.ElapsedMilliseconds}ms");
+        diceMat.renderTexture.Update();
+
+        diceMat.material.SetFloat("_GlossMapScale", userDice.Smoothness);
+        diceMat.material.SetTexture("_MetallicGlossMap", userDice.Metallic ? metal : nonmetal);
+
+
+        return diceMat.material;
     }
 
 }
