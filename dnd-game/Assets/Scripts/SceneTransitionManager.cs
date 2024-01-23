@@ -43,4 +43,14 @@ public class SceneTransitionManager : MonoBehaviour
         NetworkManager.Singleton.Shutdown();
         SceneManager.LoadScene("MenuScene");
     }
+
+    public void DiceCustomizer()
+    {
+        SceneManager.LoadScene("DiceCustomizerScene");
+    }
+
+    public void LoginScreen()
+    {
+        SceneManager.LoadScene("LoginScene");
+    }
 }

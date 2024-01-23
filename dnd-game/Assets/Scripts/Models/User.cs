@@ -55,6 +55,7 @@ public class UserFirebase
 {
     public const string CollectionName = "users";
 
+    [FirestoreProperty]
     public string DisplayName { get; set; }
 
     public string Email { get; set; }

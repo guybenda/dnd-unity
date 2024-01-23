@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using DndFirebase;
 using TMPro;
 using Unity.Mathematics;
@@ -28,18 +29,31 @@ public class DiceCustomizerUI : MonoBehaviour
 
     public TMP_Text ErrorText;
 
-    UserDice userDice = UserDice.Default();
+    public Button SaveButton;
+
+    public GameObject Loader;
+
+    UserDice userDice;
 
     Material diceMaterial;
+
+    bool shouldInit = false;
 
     // Start is called before the first frame update
     void Start()
     {
-        diceMaterial = DiceMaterialManager.Instance.New(userDice);
+        Loader.SetActive(true);
 
-        Die.GetComponent<MeshRenderer>().material = diceMaterial;
+        AuthManager.Instance.AddOnUserLoadedListener(OnLoadUser);
 
-        StartCoroutine(Drawer());
+    }
+
+    void OnLoadUser(User user)
+    {
+        userDice = new(AuthManager.Instance.CurrentUser.Dice);
+
+        // This exists because Render Textures can only be created on the main thread
+        shouldInit = true;
     }
 
     // Update is called once per frame
@@ -48,6 +62,44 @@ public class DiceCustomizerUI : MonoBehaviour
         var rotation = Die.transform.rotation.eulerAngles;
         rotation.y += Time.deltaTime * 10;
         Die.transform.rotation = Quaternion.Euler(rotation);
+
+        if (shouldInit)
+        {
+            shouldInit = false;
+
+            Color.RGBToHSV(userDice.MainColor, out var h1, out var s1, out var v1);
+            H1.value = h1;
+            S1.value = s1;
+            V1.value = v1;
+
+            Color.RGBToHSV(userDice.SecondaryColor, out var h2, out var s2, out var v2);
+            H2.value = h2;
+            S2.value = s2;
+            V2.value = v2;
+            A2.value = userDice.SecondaryColor.a;
+
+            Color.RGBToHSV(userDice.NumbersColor, out var h3, out var s3, out var v3);
+            H3.value = h3;
+            S3.value = s3;
+            V3.value = v3;
+
+            Smoothness.value = userDice.Smoothness;
+            Metallic.value = userDice.Metallic ? 1 : 0;
+
+            // TODO: dispose
+            diceMaterial = DiceMaterialManager.Instance.New(userDice);
+
+            Die.GetComponent<MeshRenderer>().material = diceMaterial;
+
+            var dieRotation = Die.transform.rotation;
+            var dieEuler = dieRotation.eulerAngles;
+            dieEuler.y = UnityEngine.Random.Range(0, 360);
+            Die.transform.rotation = Quaternion.Euler(dieEuler);
+
+            StartCoroutine(Drawer());
+
+            Loader.SetActive(false);
+        }
     }
 
     void Awake()
@@ -85,6 +137,8 @@ public class DiceCustomizerUI : MonoBehaviour
             return;
         }
 
+        SaveButton.GetComponentInChildren<TMP_Text>().text = "Saving...";
+
         var user = AuthManager.Instance.CurrentUser;
         user.Dice = userDice;
         try
@@ -95,6 +149,7 @@ public class DiceCustomizerUI : MonoBehaviour
         {
             Debug.LogException(e);
             ErrorText.text = e.Message;
+            SaveButton.GetComponentInChildren<TMP_Text>().text = "Save";
             return;
         }
 

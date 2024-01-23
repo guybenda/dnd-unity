@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using DndFirebase;
 using TMPro;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
@@ -64,5 +65,21 @@ public class MainMenuScript : MonoBehaviour
         }
 
         NetworkManager.Singleton.SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
+    }
+
+    public void OnClickCustomize()
+    {
+        SceneTransitionManager.Instance.DiceCustomizer();
+    }
+
+    public void OnClickLogout()
+    {
+        AuthManager.Instance.Logout();
+        SceneTransitionManager.Instance.LoginScreen();
+    }
+
+    public void OnClickQuit()
+    {
+        Application.Quit();
     }
 }

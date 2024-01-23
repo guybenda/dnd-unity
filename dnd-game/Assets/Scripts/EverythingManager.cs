@@ -10,7 +10,7 @@ public class EverythingManager : MonoBehaviour
         if (Instance != null)
         {
             Debug.LogError("Multiple EverythingManagers, destroying");
-            Destroy(this);
+            Destroy(gameObject);
             return;
         }
 
@@ -18,8 +18,8 @@ public class EverythingManager : MonoBehaviour
         DontDestroyOnLoad(this);
 
         gameObject.AddComponent<DiceManager>();
-        gameObject.AddComponent<AuthManager>();
         gameObject.AddComponent<DndFirestore>();
+        gameObject.AddComponent<AuthManager>();
         gameObject.AddComponent<SceneTransitionManager>();
         gameObject.AddComponent<DiceMaterialManager>();
     }

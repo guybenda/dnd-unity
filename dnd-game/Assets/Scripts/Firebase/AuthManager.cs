@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Firebase.Auth;
+using Firebase.Extensions;
 using Firebase.Firestore;
 using UnityEngine;
 
@@ -13,7 +14,11 @@ namespace DndFirebase
         public static AuthManager Instance { get; private set; }
         public User CurrentUser { get; private set; }
 
+        event Action<User> OnUserLoaded;
+
         FirebaseAuth auth;
+
+        object _userLock = new();
 
         void Awake()
         {
@@ -30,6 +35,24 @@ namespace DndFirebase
             DontDestroyOnLoad(this);
 
             auth = FirebaseAuth.DefaultInstance;
+
+            if (auth.CurrentUser != null)
+            {
+                User.Get(auth.CurrentUser.Email).ContinueWith(task =>
+                {
+                    if (!task.IsCompletedSuccessfully)
+                    {
+                        Debug.LogError("Failed to get user: " + task.Exception);
+                        return;
+                    }
+
+                    lock (_userLock)
+                    {
+                        CurrentUser = task.Result;
+                        OnUserLoaded?.Invoke(CurrentUser);
+                    }
+                });
+            }
         }
 
         public async Task<(bool success, string error)> SignUp(string displayName, string email, string password)
@@ -38,11 +61,6 @@ namespace DndFirebase
             {
                 AuthResult result = await auth.CreateUserWithEmailAndPasswordAsync(email, password);
                 FirebaseUser fbUser = result.User;
-
-                await fbUser.UpdateUserProfileAsync(new()
-                {
-                    DisplayName = displayName
-                });
 
                 var user = new User
                 {
@@ -71,7 +89,6 @@ namespace DndFirebase
             {
                 var result = await auth.SignInWithEmailAndPasswordAsync(email, password);
                 var user = await User.Get(result.User.Email);
-                user.DisplayName = result.User.DisplayName;
 
                 CurrentUser = user;
             }
@@ -102,7 +119,26 @@ namespace DndFirebase
 
         public bool IsLoggedIn()
         {
-            return auth.CurrentUser != null;
+            return CurrentUser != null;
+        }
+
+        public void AddOnUserLoadedListener(Action<User> listener)
+        {
+            lock (_userLock)
+            {
+                if (CurrentUser == null)
+                {
+                    OnUserLoaded += listener;
+                    return;
+                }
+            }
+
+            listener(CurrentUser);
+        }
+
+        public void RemoveOnUserLoadedListener(Action<User> listener)
+        {
+            OnUserLoaded -= listener;
         }
     }
 }

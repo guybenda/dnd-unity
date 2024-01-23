@@ -1,8 +1,9 @@
+using System;
 using Firebase.Firestore;
 using Unity.Netcode;
 using UnityEngine;
 
-public class UserDice : INetworkSerializable
+public class UserDice : INetworkSerializable, IComparable<UserDice>
 {
     public Color MainColor;
     public Color SecondaryColor;
@@ -29,7 +30,7 @@ public class UserDice : INetworkSerializable
 
         var metallic = Metallic ? "1" : "0";
 
-        return $"{c1}_{c2}_{c3}_{Smoothness}_{metallic}";
+        return $"#{c1}_#{c2}_#{c3}_{Smoothness}_{metallic}";
     }
 
     public static UserDice FromString(string str)
@@ -46,7 +47,7 @@ public class UserDice : INetworkSerializable
             MainColor = ColorUtility.TryParseHtmlString(parts[0], out var mainColor) ? mainColor : Color.white,
             SecondaryColor = ColorUtility.TryParseHtmlString(parts[1], out var secondaryColor) ? secondaryColor : Color.white,
             NumbersColor = ColorUtility.TryParseHtmlString(parts[2], out var numbersColor) ? numbersColor : Color.black,
-            Smoothness = float.TryParse(parts[3], out var smoothness) ? smoothness : 0.5f,
+            Smoothness = float.TryParse(parts[3], out var smoothness) ? smoothness : 0.7f,
             Metallic = parts[4] == "1",
         };
     }
@@ -58,8 +59,24 @@ public class UserDice : INetworkSerializable
             MainColor = Color.white,
             SecondaryColor = Color.white,
             NumbersColor = Color.black,
-            Smoothness = 0.5f,
+            Smoothness = 0.7f,
             Metallic = false,
         };
+    }
+
+    public int CompareTo(UserDice other)
+    {
+        return ToString().CompareTo(other.ToString());
+    }
+
+    public UserDice() { }
+
+    public UserDice(UserDice userDice)
+    {
+        MainColor = userDice.MainColor;
+        SecondaryColor = userDice.SecondaryColor;
+        NumbersColor = userDice.NumbersColor;
+        Smoothness = userDice.Smoothness;
+        Metallic = userDice.Metallic;
     }
 }
