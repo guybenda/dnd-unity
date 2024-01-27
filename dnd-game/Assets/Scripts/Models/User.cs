@@ -3,20 +3,21 @@ using System;
 using System.Threading.Tasks;
 using DndFirebase;
 using Firebase.Firestore;
+using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
 public class User : INetworkSerializable
 {
-    public string DisplayName;
-    public string Email;
+    public FixedString512Bytes DisplayName;
+    public FixedString512Bytes Email;
     public UserDice Dice;
 
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
         serializer.SerializeValue(ref DisplayName);
-        serializer.SerializeValue(ref Email);
-        serializer.SerializeValue(ref Dice);
+        // serializer.SerializeValue(ref Email);
+        Dice.NetworkSerialize(serializer);
     }
 
     public User() { }
@@ -36,15 +37,15 @@ public class User : INetworkSerializable
     {
         DisplayName = dbUser.DisplayName;
         Email = dbUser.Email;
-        Dice = UserDice.FromString(dbUser.Dice);
+        Dice = new(dbUser.Dice);
     }
 
     public UserFirebase ToDbUser(User user)
     {
         return new UserFirebase
         {
-            DisplayName = user.DisplayName,
-            Email = user.Email,
+            DisplayName = user.DisplayName.ToString(),
+            Email = user.Email.ToString(),
             Dice = user.Dice.ToString()
         };
     }

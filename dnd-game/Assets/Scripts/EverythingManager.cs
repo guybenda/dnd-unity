@@ -9,7 +9,6 @@ public class EverythingManager : MonoBehaviour
     {
         if (Instance != null)
         {
-            Debug.LogError("Multiple EverythingManagers, destroying");
             Destroy(gameObject);
             return;
         }

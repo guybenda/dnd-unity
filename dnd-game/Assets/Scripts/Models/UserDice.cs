@@ -3,7 +3,7 @@ using Firebase.Firestore;
 using Unity.Netcode;
 using UnityEngine;
 
-public class UserDice : INetworkSerializable, IComparable<UserDice>
+public struct UserDice : INetworkSerializable, IComparable<UserDice>
 {
     public Color MainColor;
     public Color SecondaryColor;
@@ -33,25 +33,6 @@ public class UserDice : INetworkSerializable, IComparable<UserDice>
         return $"#{c1}_#{c2}_#{c3}_{Smoothness}_{metallic}";
     }
 
-    public static UserDice FromString(string str)
-    {
-        var parts = str.Split('_');
-
-        if (parts.Length != 5)
-        {
-            return Default();
-        }
-
-        return new UserDice
-        {
-            MainColor = ColorUtility.TryParseHtmlString(parts[0], out var mainColor) ? mainColor : Color.white,
-            SecondaryColor = ColorUtility.TryParseHtmlString(parts[1], out var secondaryColor) ? secondaryColor : Color.white,
-            NumbersColor = ColorUtility.TryParseHtmlString(parts[2], out var numbersColor) ? numbersColor : Color.black,
-            Smoothness = float.TryParse(parts[3], out var smoothness) ? smoothness : 0.7f,
-            Metallic = parts[4] == "1",
-        };
-    }
-
     public static UserDice Default()
     {
         return new UserDice
@@ -69,7 +50,22 @@ public class UserDice : INetworkSerializable, IComparable<UserDice>
         return ToString().CompareTo(other.ToString());
     }
 
-    public UserDice() { }
+    public UserDice(string from)
+    {
+        var parts = from.Split('_');
+
+        if (parts.Length != 5)
+        {
+            this = Default();
+            return;
+        }
+
+        MainColor = ColorUtility.TryParseHtmlString(parts[0], out var mainColor) ? mainColor : Color.white;
+        SecondaryColor = ColorUtility.TryParseHtmlString(parts[1], out var secondaryColor) ? secondaryColor : Color.white;
+        NumbersColor = ColorUtility.TryParseHtmlString(parts[2], out var numbersColor) ? numbersColor : Color.black;
+        Smoothness = float.TryParse(parts[3], out var smoothness) ? smoothness : 0.7f;
+        Metallic = parts[4] == "1";
+    }
 
     public UserDice(UserDice userDice)
     {

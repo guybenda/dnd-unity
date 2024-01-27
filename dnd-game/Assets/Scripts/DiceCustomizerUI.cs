@@ -33,9 +33,7 @@ public class DiceCustomizerUI : MonoBehaviour
 
     public GameObject Loader;
 
-    UserDice userDice;
-
-    Material diceMaterial;
+    DiceMaterial diceMaterial;
 
     bool shouldInit = false;
 
@@ -50,7 +48,6 @@ public class DiceCustomizerUI : MonoBehaviour
 
     void OnLoadUser(User user)
     {
-        userDice = new(AuthManager.Instance.CurrentUser.Dice);
 
         // This exists because Render Textures can only be created on the main thread
         shouldInit = true;
@@ -66,6 +63,8 @@ public class DiceCustomizerUI : MonoBehaviour
         if (shouldInit)
         {
             shouldInit = false;
+
+            var userDice = new UserDice(AuthManager.Instance.CurrentUser.Dice);
 
             Color.RGBToHSV(userDice.MainColor, out var h1, out var s1, out var v1);
             H1.value = h1;
@@ -87,9 +86,12 @@ public class DiceCustomizerUI : MonoBehaviour
             Metallic.value = userDice.Metallic ? 1 : 0;
 
             // TODO: dispose
-            diceMaterial = DiceMaterialManager.Instance.New(userDice);
+            diceMaterial = new()
+            {
+                userDice = userDice
+            };
 
-            Die.GetComponent<MeshRenderer>().material = diceMaterial;
+            Die.GetComponent<MeshRenderer>().material = diceMaterial.material;
 
             var dieRotation = Die.transform.rotation;
             var dieEuler = dieRotation.eulerAngles;
@@ -105,6 +107,12 @@ public class DiceCustomizerUI : MonoBehaviour
     void Awake()
     {
 
+    }
+
+    void OnDestroy()
+    {
+        StopAllCoroutines();
+        DiceMaterialManager.Instance.Dispose(diceMaterial);
     }
 
     public void OnClickRandom()
@@ -140,7 +148,7 @@ public class DiceCustomizerUI : MonoBehaviour
         SaveButton.GetComponentInChildren<TMP_Text>().text = "Saving...";
 
         var user = AuthManager.Instance.CurrentUser;
-        user.Dice = userDice;
+        user.Dice = diceMaterial.userDice;
         try
         {
             await user.Save();
@@ -165,18 +173,18 @@ public class DiceCustomizerUI : MonoBehaviour
     {
         while (true)
         {
-            userDice.MainColor = Color.HSVToRGB(H1.value, S1.value, V1.value);
+            diceMaterial.userDice.MainColor = Color.HSVToRGB(H1.value, S1.value, V1.value);
 
             var secondary = Color.HSVToRGB(H2.value, S2.value, V2.value);
             secondary.a = A2.value;
-            userDice.SecondaryColor = secondary;
+            diceMaterial.userDice.SecondaryColor = secondary;
 
-            userDice.NumbersColor = Color.HSVToRGB(H3.value, S3.value, V3.value);
+            diceMaterial.userDice.NumbersColor = Color.HSVToRGB(H3.value, S3.value, V3.value);
 
-            userDice.Smoothness = Smoothness.value;
-            userDice.Metallic = Metallic.value > 0.5f;
+            diceMaterial.userDice.Smoothness = Smoothness.value;
+            diceMaterial.userDice.Metallic = Metallic.value > 0.5f;
 
-            DiceMaterialManager.Instance.Draw(userDice);
+            diceMaterial.Draw();
             yield return null;
             yield return null;
         }

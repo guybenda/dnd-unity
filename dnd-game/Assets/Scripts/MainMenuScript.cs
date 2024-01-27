@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
 using DndFirebase;
 using TMPro;
@@ -40,6 +41,7 @@ public class MainMenuScript : MonoBehaviour
             ip,
             port
         );
+        NetworkManager.Singleton.NetworkConfig.ConnectionData = Encoding.ASCII.GetBytes(AuthManager.Instance.CurrentUser.Email.ToString());
 
         if (!NetworkManager.Singleton.StartClient())
         {
@@ -57,6 +59,7 @@ public class MainMenuScript : MonoBehaviour
             port,
             "0.0.0.0"
         );
+        NetworkManager.Singleton.NetworkConfig.ConnectionApproval = true;
 
         if (!NetworkManager.Singleton.StartHost())
         {
