@@ -61,13 +61,20 @@ public class MainMenuScript : MonoBehaviour
         );
         NetworkManager.Singleton.NetworkConfig.ConnectionApproval = true;
 
+        var gameManager = new GameObject("GameManager").AddComponent<NetworkObject>().gameObject.AddComponent<GameManager>();
+
         if (!NetworkManager.Singleton.StartHost())
         {
             GameObject.Find("Error").GetComponent<TMP_Text>().text = "Failed to start host";
+            Destroy(gameManager.gameObject);
             return;
         }
 
+        gameManager.ConnectPlayer(NetworkManager.Singleton.LocalClientId, AuthManager.Instance.CurrentUser.Email.ToString(), isAllowedToRoll: true);
+        DontDestroyOnLoad(gameManager.gameObject);
         NetworkManager.Singleton.SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
+
+        // gameManager.GetComponent<NetworkObject>().Spawn();
     }
 
     public void OnClickCustomize()

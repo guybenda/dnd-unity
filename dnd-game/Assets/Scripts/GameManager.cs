@@ -41,8 +41,11 @@ public class GameManager : NetworkBehaviour
     {
         Instance = null;
 
-        NetworkManager.Singleton.ConnectionApprovalCallback -= ApprovalCheck;
-        NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnect;
+        if (NetworkManager.Singleton)
+        {
+            NetworkManager.Singleton.ConnectionApprovalCallback -= ApprovalCheck;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnect;
+        }
     }
 
     public override void OnNetworkSpawn()
@@ -70,27 +73,18 @@ public class GameManager : NetworkBehaviour
 
         ConnectPlayer(request.ClientNetworkId, userEmail);
 
-
-        // if (approvedUsers.Contains(userEmail))
-        // {
-        //     response.Approved = true;
-        //     response.
-        //     return;
-        // }
-        // if (pendingUsers.Contains(userEmail))
-        // {
-        //     response.Approved = false;
-        //     response.Reason = "Waiting for approval, please try again later";
-        //     return;
-        // }
-
-        // pendingUsers.Add(userEmail);
-        // //TODO approve
     }
 
-    async void ConnectPlayer(ulong clientId, string email)
+    public async void ConnectPlayer(ulong clientId, string email, bool isAllowedToRoll = false)
     {
         var user = await User.Get(email);
+
+        if (user == null)
+        {
+            Debug.LogError($"User {email} not found");
+            NetworkManager.Singleton.DisconnectClient(clientId);
+            return;
+        }
 
         var player = Instantiate(playerPrefab);
 
@@ -100,11 +94,56 @@ public class GameManager : NetworkBehaviour
         var playerNetworkObject = player.GetComponent<NetworkObject>();
         playerNetworkObject.SpawnAsPlayerObject(clientId);
 
+        playerScript.IsAllowedToRoll = isAllowedToRoll;
+
     }
 
     void OnClientDisconnect(ulong obj)
     {
         throw new NotImplementedException();
+    }
+
+    public Player CurrentPlayer()
+    {
+        return NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<Player>();
+    }
+
+    public List<Player> Players()
+    {
+        var playerObjects = NetworkManager.Singleton.ConnectedClientsList;
+        var playersList = new List<Player>(playerObjects.Count);
+
+        for (int i = 0; i < playerObjects.Count; i++)
+        {
+            playersList.Add(playerObjects[i].PlayerObject.GetComponent<Player>());
+        }
+
+        return playersList;
+    }
+
+    public Player PlayerByEmail(string email)
+    {
+        var players = Players();
+
+        for (int i = 0; i < players.Count; i++)
+        {
+            if (players[i].Email == email)
+            {
+                return players[i];
+            }
+        }
+
+        return null;
+    }
+
+    public Player PlayerByClientId(ulong clientId)
+    {
+        if (NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out var networkClient))
+        {
+            return networkClient.PlayerObject.GetComponent<Player>();
+        }
+
+        return null;
     }
 
 }

@@ -17,11 +17,20 @@ public class LoginMenuScript : MonoBehaviour
     void Start()
     {
         ActivateSelectionMenu();
+        SetLoader(false);
     }
 
     void Update()
     {
 
+    }
+
+    void Awake()
+    {
+        if (AuthManager.Instance.IsLoggedIn())
+        {
+            SceneTransitionManager.Instance.MainMenu();
+        }
     }
 
     void ActivateLoginMenu()

@@ -52,6 +52,12 @@ public struct UserDice : INetworkSerializable, IComparable<UserDice>
 
     public UserDice(string from)
     {
+        if (string.IsNullOrEmpty(from))
+        {
+            this = Default();
+            return;
+        }
+
         var parts = from.Split('_');
 
         if (parts.Length != 5)

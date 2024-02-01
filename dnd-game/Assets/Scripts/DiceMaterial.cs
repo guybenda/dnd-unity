@@ -19,7 +19,6 @@ public class DiceMaterial
         material = new Material(DiceMaterialManager.Instance.diceMaterial);
 
         material.SetTexture("_MainTex", renderTexture);
-        material.SetTexture("_MetallicGlossMap", userDice.Metallic ? DiceMaterialManager.Instance.metal : DiceMaterialManager.Instance.nonmetal);
     }
 
     public Material Draw()

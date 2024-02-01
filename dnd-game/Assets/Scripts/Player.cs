@@ -3,7 +3,12 @@ using Unity.Netcode;
 public class Player : NetworkBehaviour
 {
     public string Email;
-    public NetworkVariable<bool> IsAllowedToRoll = new(false);
+    NetworkVariable<bool> isAllowedToRoll = new(false);
+    public bool IsAllowedToRoll
+    {
+        get => isAllowedToRoll.Value;
+        set => isAllowedToRoll.Value = value;
+    }
 
     public User User { get; private set; }
 

@@ -9,7 +9,6 @@ public class DiceManager : MonoBehaviour
 {
     public static DiceManager Instance { get; private set; }
 
-    Material[] diceMaterials;
     DiceMap<Mesh> meshesLow;
     DiceMap<Mesh> meshesMed;
     DiceMap<Mesh> meshesHigh;
@@ -33,7 +32,6 @@ public class DiceManager : MonoBehaviour
     {
         if (Instance != null)
         {
-            Debug.LogError("Multiple DiceManagers, destroying");
             Destroy(this);
             return;
         }
@@ -45,10 +43,7 @@ public class DiceManager : MonoBehaviour
         meshesMed = DiceMap.FromResources<Mesh>("Dice/Meshes/med");
         meshesHigh = DiceMap.FromResources<Mesh>("Dice/Meshes/high");
 
-
         MakeFacePoints();
-
-        diceMaterials = Resources.LoadAll<Material>("Dice/Materials");
     }
 
     Quaternion getRandomRotation()
@@ -58,7 +53,7 @@ public class DiceManager : MonoBehaviour
 
     Vector3 getRandomAngularVelocity()
     {
-        return Random.rotation.eulerAngles * Random.Range(-5f, 5f);
+        return Random.rotation.eulerAngles * Random.Range(-8f, 8f);
     }
 
     Vector3 getRandomVelocity()
@@ -73,13 +68,13 @@ public class DiceManager : MonoBehaviour
         return die;
     }
 
-    public GameObject MakeDie(DiceType type, int materialIndex = -1, Vector3 position = default, Vector3 velocity = default, int containerId = -1)
+    public GameObject MakeDie(DiceType type, UserDice userDice = default, Vector3 position = default, Vector3 velocity = default, int containerId = -1)
     {
         var die = instantiateDie(position);
 
         var diceScript = die.GetComponent<DiceScript>();
 
-        diceScript.MaterialId = materialIndex == -1 ? Random.Range(0, diceMaterials.Length) : materialIndex;
+        diceScript.userDice = userDice;
         diceScript.Type = type;
         diceScript.Container = containerId;
 
@@ -237,11 +232,6 @@ public class DiceManager : MonoBehaviour
         }
 
         return lowestIdx + 1;
-    }
-
-    public Material MaterialByIndex(int index)
-    {
-        return diceMaterials[index];
     }
 
     public Mesh DieMesh(DiceType type, DiceQuality quality = DiceQuality.High)

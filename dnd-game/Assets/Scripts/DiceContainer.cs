@@ -37,12 +37,25 @@ public class DiceContainer : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void NewDiceServerRpc(DiceType type)
+    public void NewDiceServerRpc(DiceType type, ServerRpcParams serverRpcParams = default)
     {
+        var sender = GameManager.Instance.PlayerByClientId(serverRpcParams.Receive.SenderClientId);
+        if (sender == null)
+        {
+            Debug.Log($"User {serverRpcParams.Receive.SenderClientId} tried to roll but wasn't found");
+            return;
+        }
+        if (!sender.IsAllowedToRoll)
+        {
+            Debug.Log($"User {sender.Email} tried to roll but is not allowed to");
+            return;
+        }
+        var senderDice = sender.User.Dice;
+
         var origin = GetRandomOrigin();
         var velocity = startingVelocity + (Target.position - origin) * 1.5f;
 
-        var die = DiceManager.Instance.MakeDie(type, position: origin, containerId: id.Value, velocity: velocity);
+        var die = DiceManager.Instance.MakeDie(type, position: origin, containerId: id.Value, velocity: velocity, userDice: senderDice);
     }
 
     GameObject[] Children()

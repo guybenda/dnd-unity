@@ -41,8 +41,6 @@ public class DiceMaterialManager : MonoBehaviour
             return;
         }
 
-        DontDestroyOnLoad(this);
-
         diceMaterial = Resources.Load<Material>("Dice/DiceMaterial");
         diceTextureMaterial = Resources.Load<Material>("Dice/DiceTextureMaterial");
 
@@ -62,16 +60,15 @@ public class DiceMaterialManager : MonoBehaviour
         return diceMat;
     }
 
-    public Material Draw(UserDice userDice)
+    public Material GenerateMaterialFromUserDice(UserDice userDice)
     {
-        var diceMat = diceMaterials[userDice];
-
-        if (diceMat == null)
+        if (diceMaterials.TryGetValue(userDice, out var diceMat))
         {
-            New(userDice);
-            diceMat = diceMaterials[userDice];
-            diceMat.Draw();
+            return diceMat.material;
         }
+
+        diceMat = New(userDice);
+        diceMat.Draw();
 
         return diceMat.material;
     }

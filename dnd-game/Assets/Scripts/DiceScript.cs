@@ -9,7 +9,7 @@ using UnityEngine;
 public class DiceScript : NetworkBehaviour
 {
     public DiceType Type;
-    public int MaterialId;
+    public UserDice userDice;
     public int Container;
 
     Outline outline;
@@ -62,11 +62,11 @@ public class DiceScript : NetworkBehaviour
         else
         {
             outline.OutlineColor = Color.white;
-            outline.OutlineWidth = 1f;
+            outline.OutlineWidth = 0.3f;
         }
 
         // Type
-        outline.OutlineMode = IsHovered ? Outline.Mode.OutlineAll : Outline.Mode.OutlineVisible;
+        outline.OutlineMode = IsHovered ? Outline.Mode.OutlineAndSilhouette : Outline.Mode.OutlineVisible;
 
         // Enabled
         outline.enabled = IsStatic || IsHovered;
@@ -83,7 +83,7 @@ public class DiceScript : NetworkBehaviour
     protected override void OnSynchronize<T>(ref BufferSerializer<T> serializer)
     {
         serializer.SerializeValue(ref Type);
-        serializer.SerializeValue(ref MaterialId);
+        userDice.NetworkSerialize(serializer);
         serializer.SerializeValue(ref Container);
         base.OnSynchronize(ref serializer);
     }
@@ -95,7 +95,7 @@ public class DiceScript : NetworkBehaviour
         meshRenderer = gameObject.GetComponent<MeshRenderer>();
 
         gameObject.GetComponent<MeshFilter>().mesh = DiceManager.Instance.DieMesh(Type);
-        SetMaterial(MaterialId);
+        SetMaterial();
 
         // Outline
         outline = gameObject.AddComponent<Outline>();
@@ -122,9 +122,9 @@ public class DiceScript : NetworkBehaviour
         shouldUpdateOutline = true;
     }
 
-    void SetMaterial(int value)
+    void SetMaterial()
     {
-        meshRenderer.material = DiceManager.Instance.MaterialByIndex(value);
+        meshRenderer.material = DiceMaterialManager.Instance.GenerateMaterialFromUserDice(userDice);
     }
 
     public int Result()

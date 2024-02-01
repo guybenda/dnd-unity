@@ -119,7 +119,7 @@ namespace DndFirebase
 
         public bool IsLoggedIn()
         {
-            return CurrentUser != null;
+            return auth.CurrentUser != null;
         }
 
         public void AddOnUserLoadedListener(Action<User> listener)
