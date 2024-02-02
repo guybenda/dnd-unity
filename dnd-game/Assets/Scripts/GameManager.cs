@@ -9,6 +9,8 @@ using UnityEngine;
 
 public class GameManager : NetworkBehaviour
 {
+    SyncExecutor exec = new();
+
     public static GameManager Instance { get; private set; }
 
     GameObject playerPrefab;
@@ -22,7 +24,7 @@ public class GameManager : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        exec.Execute();
     }
 
     void Awake()
@@ -35,6 +37,8 @@ public class GameManager : NetworkBehaviour
 
         Instance = this;
 
+        NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
+        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnect;
     }
 
     public override void OnDestroy()
@@ -54,8 +58,6 @@ public class GameManager : NetworkBehaviour
 
         playerPrefab = Resources.Load<GameObject>("PlayerPrefab");
 
-        NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
-        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnect;
 
         // Players.Value.Add(new(AuthManager.Instance.CurrentUser)
         // {
@@ -66,36 +68,43 @@ public class GameManager : NetworkBehaviour
     // I gave up on approval for now, this only spawns the player
     void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
     {
+        // response.Pending = true;
         response.Approved = true;
-        response.CreatePlayerObject = false;
 
         var userEmail = Encoding.ASCII.GetString(request.Payload);
+        Debug.Log($"User {userEmail} begin connection");
 
-        ConnectPlayer(request.ClientNetworkId, userEmail);
-
+        ConnectPlayer(request.ClientNetworkId, userEmail, response);
     }
 
-    public async void ConnectPlayer(ulong clientId, string email, bool isAllowedToRoll = false)
+    public async void ConnectPlayer(ulong clientId, string email, NetworkManager.ConnectionApprovalResponse response, bool isAllowedToRoll = false)
     {
         var user = await User.Get(email);
 
         if (user == null)
         {
-            Debug.LogError($"User {email} not found");
+            Debug.LogError($"User {email} not found in database, disconnecting client {clientId}");
             NetworkManager.Singleton.DisconnectClient(clientId);
             return;
         }
 
-        var player = Instantiate(playerPrefab);
+        exec.Enqueue(() =>
+        {
+            var player = Instantiate(playerPrefab);
 
-        var playerScript = player.GetComponent<Player>();
-        playerScript.Email = email;
+            var playerScript = player.GetComponent<Player>();
+            playerScript.Email = email;
 
-        var playerNetworkObject = player.GetComponent<NetworkObject>();
-        playerNetworkObject.SpawnAsPlayerObject(clientId);
+            var playerNetworkObject = player.GetComponent<NetworkObject>();
+            playerNetworkObject.SpawnAsPlayerObject(clientId);
 
-        playerScript.IsAllowedToRoll = isAllowedToRoll;
+            playerScript.IsAllowedToRoll = isAllowedToRoll || clientId == NetworkManager.Singleton.LocalClientId;
 
+            // response.Approved = true;
+            // response.Pending = false;
+
+            Debug.Log($"User {email} client {clientId} finished connection");
+        });
     }
 
     void OnClientDisconnect(ulong obj)
@@ -152,6 +161,12 @@ public class GameManager : NetworkBehaviour
         }
 
         return null;
+    }
+
+    public void PermitRolling(string email, bool isAllowedToRoll = true)
+    {
+        var player = PlayerByEmail(email);
+        player.IsAllowedToRoll = isAllowedToRoll;
     }
 
 }

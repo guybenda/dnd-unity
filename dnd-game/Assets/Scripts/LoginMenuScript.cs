@@ -7,6 +7,8 @@ using UnityEngine;
 
 public class LoginMenuScript : MonoBehaviour
 {
+    SyncExecutor exec = new();
+
     public GameObject LoginMenu;
     public GameObject SignUpMenu;
     public GameObject SelectionMenu;
@@ -18,7 +20,10 @@ public class LoginMenuScript : MonoBehaviour
     {
         if (AuthManager.Instance.IsLoggedIn())
         {
-            SceneTransitionManager.Instance.MainMenu();
+            AuthManager.Instance.AddOnUserLoadedListener((user) =>
+            {
+                exec.Enqueue(() => SceneTransitionManager.Instance.MainMenu());
+            });
             return;
         }
 
@@ -28,7 +33,7 @@ public class LoginMenuScript : MonoBehaviour
 
     void Update()
     {
-
+        exec.Execute();
     }
 
     void Awake()

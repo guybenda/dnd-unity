@@ -10,6 +10,8 @@ using UnityEngine.UI;
 
 public class DiceCustomizerUI : MonoBehaviour
 {
+    SyncExecutor exec = new();
+
     public GameObject Die;
     public Slider H1;
     public Slider S1;
@@ -35,8 +37,6 @@ public class DiceCustomizerUI : MonoBehaviour
 
     DiceMaterial diceMaterial;
 
-    bool shouldInit = false;
-
     // Start is called before the first frame update
     void Start()
     {
@@ -48,9 +48,7 @@ public class DiceCustomizerUI : MonoBehaviour
 
     void OnLoadUser(User user)
     {
-
-        // This exists because Render Textures can only be created on the main thread
-        shouldInit = true;
+        exec.Enqueue(() => Init());
     }
 
     // Update is called once per frame
@@ -60,48 +58,48 @@ public class DiceCustomizerUI : MonoBehaviour
         rotation.y += Time.deltaTime * 10;
         Die.transform.rotation = Quaternion.Euler(rotation);
 
-        if (shouldInit)
+        exec.Execute();
+    }
+
+    void Init()
+    {
+        var userDice = new UserDice(AuthManager.Instance.CurrentUser.Dice);
+
+        Color.RGBToHSV(userDice.MainColor, out var h1, out var s1, out var v1);
+        H1.value = h1;
+        S1.value = s1;
+        V1.value = v1;
+
+        Color.RGBToHSV(userDice.SecondaryColor, out var h2, out var s2, out var v2);
+        H2.value = h2;
+        S2.value = s2;
+        V2.value = v2;
+        A2.value = userDice.SecondaryColor.a;
+
+        Color.RGBToHSV(userDice.NumbersColor, out var h3, out var s3, out var v3);
+        H3.value = h3;
+        S3.value = s3;
+        V3.value = v3;
+
+        Smoothness.value = userDice.Smoothness;
+        Metallic.value = userDice.Metallic ? 1 : 0;
+
+        // TODO: dispose
+        diceMaterial = new()
         {
-            shouldInit = false;
+            userDice = userDice
+        };
 
-            var userDice = new UserDice(AuthManager.Instance.CurrentUser.Dice);
+        Die.GetComponent<MeshRenderer>().material = diceMaterial.material;
 
-            Color.RGBToHSV(userDice.MainColor, out var h1, out var s1, out var v1);
-            H1.value = h1;
-            S1.value = s1;
-            V1.value = v1;
+        var dieRotation = Die.transform.rotation;
+        var dieEuler = dieRotation.eulerAngles;
+        dieEuler.y = UnityEngine.Random.Range(0, 360);
+        Die.transform.rotation = Quaternion.Euler(dieEuler);
 
-            Color.RGBToHSV(userDice.SecondaryColor, out var h2, out var s2, out var v2);
-            H2.value = h2;
-            S2.value = s2;
-            V2.value = v2;
-            A2.value = userDice.SecondaryColor.a;
+        StartCoroutine(Drawer());
 
-            Color.RGBToHSV(userDice.NumbersColor, out var h3, out var s3, out var v3);
-            H3.value = h3;
-            S3.value = s3;
-            V3.value = v3;
-
-            Smoothness.value = userDice.Smoothness;
-            Metallic.value = userDice.Metallic ? 1 : 0;
-
-            // TODO: dispose
-            diceMaterial = new()
-            {
-                userDice = userDice
-            };
-
-            Die.GetComponent<MeshRenderer>().material = diceMaterial.material;
-
-            var dieRotation = Die.transform.rotation;
-            var dieEuler = dieRotation.eulerAngles;
-            dieEuler.y = UnityEngine.Random.Range(0, 360);
-            Die.transform.rotation = Quaternion.Euler(dieEuler);
-
-            StartCoroutine(Drawer());
-
-            Loader.SetActive(false);
-        }
+        Loader.SetActive(false);
     }
 
     void Awake()

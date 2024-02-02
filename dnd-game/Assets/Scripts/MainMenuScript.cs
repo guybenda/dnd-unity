@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using DndFirebase;
@@ -18,7 +19,9 @@ public class MainMenuScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
+        NetworkManager.Singleton.NetworkConfig.ConnectionApproval = true;
+        NetworkManager.Singleton.NetworkConfig.ConnectionData =
+            Encoding.ASCII.GetBytes(AuthManager.Instance.CurrentUser.Email.ToString());
     }
 
     // Update is called once per frame
@@ -41,7 +44,6 @@ public class MainMenuScript : MonoBehaviour
             ip,
             port
         );
-        NetworkManager.Singleton.NetworkConfig.ConnectionData = Encoding.ASCII.GetBytes(AuthManager.Instance.CurrentUser.Email.ToString());
 
         if (!NetworkManager.Singleton.StartClient())
         {
@@ -59,9 +61,15 @@ public class MainMenuScript : MonoBehaviour
             port,
             "0.0.0.0"
         );
-        NetworkManager.Singleton.NetworkConfig.ConnectionApproval = true;
 
-        var gameManager = new GameObject("GameManager").AddComponent<NetworkObject>().gameObject.AddComponent<GameManager>();
+        var gameManagerPrefab = NetworkManager.Singleton.NetworkConfig.Prefabs.Prefabs.First(p => p.Prefab.name == "GameManager").Prefab;
+        if (gameManagerPrefab == null)
+        {
+            Debug.LogError("GameManager prefab not found");
+            return;
+        }
+
+        var gameManager = Instantiate(gameManagerPrefab);
 
         if (!NetworkManager.Singleton.StartHost())
         {
@@ -70,7 +78,7 @@ public class MainMenuScript : MonoBehaviour
             return;
         }
 
-        gameManager.ConnectPlayer(NetworkManager.Singleton.LocalClientId, AuthManager.Instance.CurrentUser.Email.ToString(), isAllowedToRoll: true);
+        // gameManager.GetComponent<GameManager>().ConnectPlayer(NetworkManager.Singleton.LocalClientId, AuthManager.Instance.CurrentUser.Email.ToString(), isAllowedToRoll: true);
         DontDestroyOnLoad(gameManager.gameObject);
         NetworkManager.Singleton.SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
 

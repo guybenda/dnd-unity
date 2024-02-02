@@ -58,7 +58,7 @@ public class DiceScript : NetworkBehaviour
     {
         if (!IsServer) return;
 
-        IsStatic = rb.velocity.magnitude <= 0.1f && rb.angularVelocity.magnitude <= 0.05f;
+        IsStatic = rb.velocity.magnitude <= 0.05f && rb.angularVelocity.magnitude <= 0.05f;
     }
 
     protected override void OnSynchronize<T>(ref BufferSerializer<T> serializer)
