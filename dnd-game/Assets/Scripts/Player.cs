@@ -1,8 +1,16 @@
+using System;
+using Unity.Collections;
 using Unity.Netcode;
 
 public class Player : NetworkBehaviour
 {
-    public string Email;
+    NetworkVariable<FixedString512Bytes> email = new("");
+    public string Email
+    {
+        get => email.Value.ToString();
+        set => email.Value = value;
+    }
+
     NetworkVariable<bool> isAllowedToRoll = new(false);
     public bool IsAllowedToRoll
     {
@@ -19,22 +27,26 @@ public class Player : NetworkBehaviour
 
     void Awake()
     {
-
+        email.OnValueChanged += OnEmailChange;
     }
 
     protected override void OnSynchronize<T>(ref BufferSerializer<T> serializer)
     {
-        serializer.SerializeValue(ref Email);
         base.OnSynchronize(ref serializer);
-    }
-
-    async void LoadUser()
-    {
-        User = await User.Get(Email);
     }
 
     public override void OnNetworkSpawn()
     {
-        LoadUser();
+
+    }
+
+    async void OnEmailChange(FixedString512Bytes prevValue, FixedString512Bytes newValue)
+    {
+        if (string.IsNullOrEmpty(newValue.ToString()))
+        {
+            return;
+        }
+
+        User = await User.Get(newValue.ToString());
     }
 }

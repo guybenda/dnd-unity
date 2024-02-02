@@ -13,6 +13,8 @@ public class GameManager : NetworkBehaviour
 
     public static GameManager Instance { get; private set; }
 
+    Dictionary<ulong, string> clientIdToEmail = new();
+
     GameObject playerPrefab;
 
     // Start is called before the first frame update
@@ -39,6 +41,7 @@ public class GameManager : NetworkBehaviour
 
         NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
         NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnect;
+        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
     }
 
     public override void OnDestroy()
@@ -49,6 +52,7 @@ public class GameManager : NetworkBehaviour
         {
             NetworkManager.Singleton.ConnectionApprovalCallback -= ApprovalCheck;
             NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnect;
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
         }
     }
 
@@ -70,46 +74,58 @@ public class GameManager : NetworkBehaviour
     {
         // response.Pending = true;
         response.Approved = true;
+        response.CreatePlayerObject = true;
 
         var userEmail = Encoding.ASCII.GetString(request.Payload);
         Debug.Log($"User {userEmail} begin connection");
 
-        ConnectPlayer(request.ClientNetworkId, userEmail, response);
+        clientIdToEmail.Add(request.ClientNetworkId, userEmail);
+
+        // ConnectPlayer(request.ClientNetworkId, userEmail, response);
     }
 
-    public async void ConnectPlayer(ulong clientId, string email, NetworkManager.ConnectionApprovalResponse response, bool isAllowedToRoll = false)
+    async void OnClientConnected(ulong clientId)
     {
-        var user = await User.Get(email);
-
-        if (user == null)
+        var email = clientIdToEmail.GetValueOrDefault(clientId);
+        if (email == null)
         {
-            Debug.LogError($"User {email} not found in database, disconnecting client {clientId}");
+            Debug.LogError($"Client {clientId} connected but no email found");
             NetworkManager.Singleton.DisconnectClient(clientId);
             return;
         }
 
-        exec.Enqueue(() =>
+        var user = await User.Get(email);
+        if (user == null)
         {
-            var player = Instantiate(playerPrefab);
+            Debug.LogError($"User {email} connected but not found in database");
+            NetworkManager.Singleton.DisconnectClient(clientId);
+            return;
+        }
 
-            var playerScript = player.GetComponent<Player>();
-            playerScript.Email = email;
+        var player = PlayerByClientId(clientId);
+        if (player == null)
+        {
+            Debug.LogError($"Player {email} has no player object when executing OnClientConnected");
+            NetworkManager.Singleton.DisconnectClient(clientId);
+            return;
+        }
 
-            var playerNetworkObject = player.GetComponent<NetworkObject>();
-            playerNetworkObject.SpawnAsPlayerObject(clientId);
+        var playerScript = player.GetComponent<Player>();
+        playerScript.Email = email;
+        playerScript.IsAllowedToRoll = true;//clientId == NetworkManager.Singleton.LocalClientId;
 
-            playerScript.IsAllowedToRoll = isAllowedToRoll || clientId == NetworkManager.Singleton.LocalClientId;
-
-            // response.Approved = true;
-            // response.Pending = false;
-
-            Debug.Log($"User {email} client {clientId} finished connection");
-        });
+        Debug.Log($"User {email} client {clientId} finished connection");
     }
 
-    void OnClientDisconnect(ulong obj)
+    void OnClientDisconnect(ulong clientId)
     {
-        throw new NotImplementedException();
+        var email = clientIdToEmail.GetValueOrDefault(clientId);
+        if (email == null)
+        {
+            return;
+        }
+
+        Debug.Log($"User {email} client {clientId} disconnected");
     }
 
     public Player CurrentPlayer()
