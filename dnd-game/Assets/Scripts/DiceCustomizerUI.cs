@@ -54,9 +54,9 @@ public class DiceCustomizerUI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        var rotation = Die.transform.rotation.eulerAngles;
-        rotation.y += Time.deltaTime * 10;
-        Die.transform.rotation = Quaternion.Euler(rotation);
+        var rotation = Die.transform.localRotation.eulerAngles;
+        rotation.z -= Time.deltaTime * 8;
+        Die.transform.localRotation = Quaternion.Euler(rotation);
 
         exec.Execute();
     }
@@ -92,10 +92,10 @@ public class DiceCustomizerUI : MonoBehaviour
 
         Die.GetComponent<MeshRenderer>().material = diceMaterial.material;
 
-        var dieRotation = Die.transform.rotation;
+        var dieRotation = Die.transform.localRotation;
         var dieEuler = dieRotation.eulerAngles;
-        dieEuler.y = UnityEngine.Random.Range(0, 360);
-        Die.transform.rotation = Quaternion.Euler(dieEuler);
+        dieEuler.z = UnityEngine.Random.Range(0, 360);
+        Die.transform.localRotation = Quaternion.Euler(dieEuler);
 
         StartCoroutine(Drawer());
 

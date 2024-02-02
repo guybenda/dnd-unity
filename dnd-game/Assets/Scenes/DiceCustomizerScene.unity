@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 0.9
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 2100000, guid: 4b4a29dbe7b843646b7aefd43694f57c, type: 2}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 97637a2a763b7f24b8da4e139e4144ca, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -315,13 +315,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 90861953}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0.25881857, y: -0, z: -0, w: 0.965926}
   m_LocalPosition: {x: 0, y: 1, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -30, y: 0, z: 0}
 --- !u!1 &159421428
 GameObject:
   m_ObjectHideFlags: 0
@@ -1268,7 +1268,7 @@ Light:
   serializedVersion: 11
   m_Type: 1
   m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
-  m_Intensity: 1.1
+  m_Intensity: 1.2
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -1326,13 +1326,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 337621873}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalRotation: {x: 0.16773182, y: -0.19826697, z: 0.1663656, w: 0.9512512}
+  m_LocalPosition: {x: 0, y: 7.7320457, z: -2.3397412}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+  m_LocalEulerAnglesHint: {x: 22.649, y: -20.38, z: 15.717}
 --- !u!1 &343104799
 GameObject:
   m_ObjectHideFlags: 0
@@ -8704,13 +8704,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1394904456312975}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.05560867, y: -0.70527893, z: 0.7049002, w: -0.051040873}
-  m_LocalPosition: {x: -0.382, y: 1.019, z: -8.369}
+  m_LocalRotation: {x: -0.040503524, y: -0.49880588, z: 0.8634207, w: -0.06369425}
+  m_LocalPosition: {x: -0.382, y: 1.8319533, z: -8.5970125}
   m_LocalScale: {x: 2.5, y: 2.5, z: 2.5}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: -269.63, y: -639.065, z: -1530.415}
+  m_LocalEulerAnglesHint: {x: -299.943, y: -720.735, z: -1611.987}
 --- !u!23 &23326943293246741
 MeshRenderer:
   m_ObjectHideFlags: 0
