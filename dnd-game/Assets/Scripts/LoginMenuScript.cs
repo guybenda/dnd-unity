@@ -16,6 +16,12 @@ public class LoginMenuScript : MonoBehaviour
 
     void Start()
     {
+        if (AuthManager.Instance.IsLoggedIn())
+        {
+            SceneTransitionManager.Instance.MainMenu();
+            return;
+        }
+
         ActivateSelectionMenu();
         SetLoader(false);
     }
@@ -27,10 +33,6 @@ public class LoginMenuScript : MonoBehaviour
 
     void Awake()
     {
-        if (AuthManager.Instance.IsLoggedIn())
-        {
-            SceneTransitionManager.Instance.MainMenu();
-        }
     }
 
     void ActivateLoginMenu()

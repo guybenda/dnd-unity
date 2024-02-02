@@ -140,6 +140,14 @@ public class GameManager : NetworkBehaviour
     {
         if (NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out var networkClient))
         {
+            var playerObject = networkClient.PlayerObject;
+
+            if (playerObject == null)
+            {
+                Debug.LogError($"Player {clientId} found in ConnectedClients but has no PlayerObject");
+                return null;
+            }
+
             return networkClient.PlayerObject.GetComponent<Player>();
         }
 

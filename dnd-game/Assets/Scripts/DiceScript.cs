@@ -15,7 +15,7 @@ public class DiceScript : NetworkBehaviour
     Outline outline;
     Rigidbody rb;
     MeshRenderer meshRenderer;
-    NetworkVariable<bool> isStatic = new(false);
+    // NetworkVariable<bool> isStatic = new(false);
 
     bool shouldUpdateOutline = true;
 
@@ -30,10 +30,7 @@ public class DiceScript : NetworkBehaviour
         }
     }
 
-    public bool IsStatic
-    {
-        get => isStatic.Value;
-    }
+    public bool IsStatic { get; private set; }
 
     // Start is called before the first frame update
     void Start()
@@ -53,31 +50,15 @@ public class DiceScript : NetworkBehaviour
 
     void UpdateOutline()
     {
-        // Color
-        if (IsHovered)
-        {
-            outline.OutlineColor = Color.red;
-            outline.OutlineWidth = 5f;
-        }
-        else
-        {
-            outline.OutlineColor = Color.white;
-            outline.OutlineWidth = 0.3f;
-        }
-
-        // Type
-        outline.OutlineMode = IsHovered ? Outline.Mode.OutlineAndSilhouette : Outline.Mode.OutlineVisible;
-
         // Enabled
-        outline.enabled = IsStatic || IsHovered;
-
+        outline.enabled = IsHovered;
     }
 
     void FixedUpdate()
     {
         if (!IsServer) return;
 
-        isStatic.Value = rb.velocity.magnitude <= 0.1f && rb.angularVelocity.magnitude <= 0.05f;
+        IsStatic = rb.velocity.magnitude <= 0.1f && rb.angularVelocity.magnitude <= 0.05f;
     }
 
     protected override void OnSynchronize<T>(ref BufferSerializer<T> serializer)
@@ -100,9 +81,9 @@ public class DiceScript : NetworkBehaviour
         // Outline
         outline = gameObject.AddComponent<Outline>();
         outline.enabled = false;
-
-        // Events
-        isStatic.OnValueChanged += OnIsStaticUpdate;
+        outline.OutlineColor = Color.red;
+        outline.OutlineWidth = 5f;
+        outline.OutlineMode = Outline.Mode.OutlineAndSilhouette;
 
         gameObject.GetComponent<MeshCollider>().sharedMesh = DiceManager.Instance.DieColliderMesh(Type);
 
@@ -115,11 +96,6 @@ public class DiceScript : NetworkBehaviour
             rb.isKinematic = true;
         }
 
-    }
-
-    void OnIsStaticUpdate(bool prev, bool curr)
-    {
-        shouldUpdateOutline = true;
     }
 
     void SetMaterial()

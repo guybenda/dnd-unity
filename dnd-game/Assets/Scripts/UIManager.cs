@@ -12,8 +12,6 @@ public class UIManager : MonoBehaviour
     int diceMask;
     DiceScript highlightedDice;
 
-    int counter = 0;
-
 
     void Start()
     {
@@ -59,10 +57,11 @@ public class UIManager : MonoBehaviour
 
     void FixedUpdate()
     {
-        counter = (counter + 1) % 10;
-        if (counter != 0) return;
+        // counter = (counter + 1) % 10;
+        // if (counter != 0) return;
 
-        var (total, breakdown) = diceContainer.Total();
+        var total = diceContainer.DiceTotal;
+        var breakdown = diceContainer.DiceBreakdown;
 
         if (breakdown == "")
         {

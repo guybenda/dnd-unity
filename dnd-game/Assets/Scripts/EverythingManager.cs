@@ -16,6 +16,7 @@ public class EverythingManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(this);
 
+        gameObject.AddComponent<CrashlyticsInit>();
         gameObject.AddComponent<DiceManager>();
         gameObject.AddComponent<DndFirestore>();
         gameObject.AddComponent<AuthManager>();

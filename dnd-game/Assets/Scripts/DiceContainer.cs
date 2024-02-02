@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using DndCommon;
+using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -11,6 +12,29 @@ public class DiceContainer : NetworkBehaviour
     readonly Vector3 startingVelocity = new(0, 5, 0);
 
     NetworkVariable<int> id = new(-1);
+    NetworkVariable<int> total = new(0);
+    NetworkVariable<FixedString512Bytes> breakdown = new("");
+
+    int diceCalcCounter = 0;
+
+    public int DiceTotal
+    {
+        get => total.Value;
+        private set
+        {
+            total.Value = value;
+        }
+    }
+
+    public string DiceBreakdown
+    {
+        get => breakdown.Value.ToString();
+        private set
+        {
+            if (breakdown.Value.Equals(value)) return;
+            breakdown.Value = value;
+        }
+    }
 
     public Transform Target;
 
@@ -21,6 +45,17 @@ public class DiceContainer : NetworkBehaviour
 
     void Update()
     {
+
+    }
+
+    void FixedUpdate()
+    {
+        if (!IsServer) return;
+
+        diceCalcCounter = (diceCalcCounter + 1) % 4;
+        if (diceCalcCounter != 0) return;
+
+        (DiceTotal, DiceBreakdown) = Total();
 
     }
 
