@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Unity.Collections;
 using UnityEngine;
 
@@ -69,6 +68,8 @@ public class DiceMaterialManager : MonoBehaviour
 
         diceMat = New(userDice);
         diceMat.Draw();
+
+        Debug.Log("New DiceMaterial created " + userDice);
 
         return diceMat.material;
     }

@@ -5,6 +5,16 @@ using UnityEngine;
 
 public class UIManager : MonoBehaviour
 {
+    public static UIManager Instance { get; private set; }
+
+    public GameObject MainGUI;
+    public GameObject PlayersContainer;
+    public GameObject RollButtons;
+
+    public GameObject TabGUI;
+
+    public GameObject playerUIPrefab;
+
     TextMeshProUGUI resultText;
     DiceContainer diceContainer;
     Camera cam;
@@ -20,12 +30,28 @@ public class UIManager : MonoBehaviour
 
     void Awake()
     {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(this);
+            return;
+        }
+
         resultText = GameObject.Find("ResultText").GetComponent<TextMeshProUGUI>();
         diceContainer = GameObject.Find("DiceContainer").GetComponent<DiceContainer>();
         cam = Camera.main;
 
         diceMask = LayerMask.GetMask("Dice");
 
+    }
+
+    void OnDestroy()
+    {
+        if (Instance != this) return;
+        Instance = null;
     }
 
     void Update()
@@ -70,5 +96,10 @@ public class UIManager : MonoBehaviour
         }
 
         resultText.text = $"{breakdown} = {total}";
+    }
+
+    public void AddPlayer(Player player)
+    {
+
     }
 }

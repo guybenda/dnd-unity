@@ -74,17 +74,13 @@ public class DiceContainer : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void NewDiceServerRpc(DiceType type, ServerRpcParams serverRpcParams = default)
     {
-        var sender = GameManager.Instance.PlayerByClientId(serverRpcParams.Receive.SenderClientId);
-        if (sender == null)
-        {
-            Debug.Log($"User {serverRpcParams.Receive.SenderClientId} tried to roll but wasn't found");
-            return;
-        }
+        var sender = serverRpcParams.MustPlayer();
         if (!sender.IsAllowedToRoll)
         {
             Debug.Log($"User {sender.Email} tried to roll but is not allowed to");
             return;
         }
+
         var senderDice = sender.User.Dice;
 
         var origin = GetRandomOrigin();
@@ -110,8 +106,15 @@ public class DiceContainer : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void ClearServerRpc()
+    public void ClearServerRpc(ServerRpcParams serverRpcParams = default)
     {
+        var sender = serverRpcParams.MustPlayer();
+        if (!sender.IsAllowedToRoll)
+        {
+            Debug.Log($"User {sender.Email} tried to clear but is not allowed to");
+            return;
+        }
+
         foreach (var child in Children())
         {
             child.gameObject.GetComponent<NetworkObject>().Despawn();

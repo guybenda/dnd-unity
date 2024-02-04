@@ -15,8 +15,6 @@ public class GameManager : NetworkBehaviour
 
     Dictionary<ulong, string> clientIdToEmail = new();
 
-    GameObject playerPrefab;
-
     // Start is called before the first frame update
     void Start()
     {
@@ -46,6 +44,7 @@ public class GameManager : NetworkBehaviour
 
     public override void OnDestroy()
     {
+        if (Instance != this) return;
         Instance = null;
 
         if (NetworkManager.Singleton)
@@ -59,14 +58,6 @@ public class GameManager : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         if (!IsServer) return;
-
-        playerPrefab = Resources.Load<GameObject>("PlayerPrefab");
-
-
-        // Players.Value.Add(new(AuthManager.Instance.CurrentUser)
-        // {
-        //     IsAllowedToRoll = true
-        // });
     }
 
     // I gave up on approval for now, this only spawns the player
@@ -166,7 +157,6 @@ public class GameManager : NetworkBehaviour
         if (NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out var networkClient))
         {
             var playerObject = networkClient.PlayerObject;
-
             if (playerObject == null)
             {
                 Debug.LogError($"Player {clientId} found in ConnectedClients but has no PlayerObject");
@@ -185,4 +175,5 @@ public class GameManager : NetworkBehaviour
         player.IsAllowedToRoll = isAllowedToRoll;
     }
 
+    // public void RegisterUICallbacks(Action)
 }

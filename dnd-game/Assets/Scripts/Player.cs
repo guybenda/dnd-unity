@@ -4,18 +4,28 @@ using Unity.Netcode;
 
 public class Player : NetworkBehaviour
 {
+    public event Action<Player> OnChange;
+
     NetworkVariable<FixedString512Bytes> email = new("");
     public string Email
     {
         get => email.Value.ToString();
-        set => email.Value = value;
+        set
+        {
+            email.Value = value;
+            OnChange?.Invoke(this);
+        }
     }
 
     NetworkVariable<bool> isAllowedToRoll = new(false);
     public bool IsAllowedToRoll
     {
         get => isAllowedToRoll.Value;
-        set => isAllowedToRoll.Value = value;
+        set
+        {
+            isAllowedToRoll.Value = value;
+            OnChange?.Invoke(this);
+        }
     }
 
     public User User { get; private set; }
@@ -47,6 +57,9 @@ public class Player : NetworkBehaviour
             return;
         }
 
+        // There's a race here but the email should only be set once
         User = await User.Get(newValue.ToString());
+
+        OnChange?.Invoke(this);
     }
 }
