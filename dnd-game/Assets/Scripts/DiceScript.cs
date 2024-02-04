@@ -30,7 +30,19 @@ public class DiceScript : NetworkBehaviour
         }
     }
 
-    public bool IsStatic { get; private set; }
+    NetworkVariable<bool> isStatic = new(false);
+
+    public bool IsStatic
+    {
+        get
+        {
+            return isStatic.Value;
+        }
+        private set
+        {
+            isStatic.Value = value;
+        }
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -81,8 +93,8 @@ public class DiceScript : NetworkBehaviour
         // Outline
         outline = gameObject.AddComponent<Outline>();
         outline.enabled = false;
-        outline.OutlineColor = Color.red;
-        outline.OutlineWidth = 5f;
+        outline.OutlineColor = Color.white;
+        outline.OutlineWidth = 3f;
         outline.OutlineMode = Outline.Mode.OutlineAndSilhouette;
 
         gameObject.GetComponent<MeshCollider>().sharedMesh = DiceManager.Instance.DieColliderMesh(Type);

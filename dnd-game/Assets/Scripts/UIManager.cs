@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -13,6 +14,7 @@ public class UIManager : MonoBehaviour
 
     public GameObject TabGUI;
 
+    public TMP_Text DiceHoverText;
     public GameObject playerUIPrefab;
 
     TextMeshProUGUI resultText;
@@ -67,12 +69,41 @@ public class UIManager : MonoBehaviour
             if (highlightedDice != null)
             {
                 highlightedDice.IsHovered = true;
+
+                if (highlightedDice.IsStatic)
+                {
+                    var result = highlightedDice.Result();
+                    DiceHoverText.text = result.ToString();
+                    DiceHoverText.rectTransform.position = mousePos - new Vector3(4, 0, 0);
+
+                    if (highlightedDice.Type != DndCommon.DiceType.D100)
+                    {
+                        if (result == 1)
+                        {
+                            DiceHoverText.color = Color.red;
+                        }
+                        else if (result == (int)highlightedDice.Type)
+                        {
+                            DiceHoverText.color = Color.green;
+                        }
+                        else
+                        {
+                            DiceHoverText.color = Color.white;
+                        }
+                    }
+                    else
+                    {
+                        DiceHoverText.color = Color.white;
+                    }
+                }
             }
 
         }
         else
         {
             highlightedDice = null;
+            DiceHoverText.text = string.Empty;
+            DiceHoverText.rectTransform.position = new Vector3(1000, 1000, 0);
         }
 
         if (prevHighlightedDice != null && prevHighlightedDice != highlightedDice)
