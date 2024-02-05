@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 
 public class UIManager : MonoBehaviour
@@ -114,9 +115,6 @@ public class UIManager : MonoBehaviour
 
     void FixedUpdate()
     {
-        // counter = (counter + 1) % 10;
-        // if (counter != 0) return;
-
         var total = diceContainer.DiceTotal;
         var breakdown = diceContainer.DiceBreakdown;
 
@@ -129,8 +127,44 @@ public class UIManager : MonoBehaviour
         resultText.text = $"{breakdown} = {total}";
     }
 
-    public void AddPlayer(Player player)
+    public PlayerUITile GetPlayerUIByEmail(string email)
     {
+        return PlayersContainer.transform.Find(email)?.GetComponent<PlayerUITile>();
+    }
 
+    public void AddPlayerUI(Player player, Action<bool> canRollChangedHandler = null)
+    {
+        var playerUI = Instantiate(playerUIPrefab, PlayersContainer.transform).GetComponent<PlayerUITile>();
+        playerUI.SetPlayer(player, canRollChangedHandler);
+
+        // TODO order
+        // var order = 
+    }
+
+    public void UpdatePlayerUI(Player player)
+    {
+        if (string.IsNullOrEmpty(player.Email))
+        {
+            return;
+        }
+
+        var playerUI = GetPlayerUIByEmail(player.Email);
+        if (playerUI != null)
+        {
+            playerUI.SetPlayer(player);
+        }
+        else
+        {
+            AddPlayerUI(player, player.OnChangeCanRoll);
+        }
+    }
+
+    public void RemovePlayerUI(string email)
+    {
+        var playerUI = GetPlayerUIByEmail(email);
+        if (playerUI != null)
+        {
+            Destroy(playerUI.gameObject);
+        }
     }
 }

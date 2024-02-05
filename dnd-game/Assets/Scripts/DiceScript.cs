@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using DndCommon;
+using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -11,6 +12,13 @@ public class DiceScript : NetworkBehaviour
     public DiceType Type;
     public UserDice userDice;
     public int Container;
+
+    FixedString512Bytes rollerEmail;
+    public string RollerEmail
+    {
+        get => rollerEmail.ToString();
+        set => rollerEmail = value;
+    }
 
     Outline outline;
     Rigidbody rb;
@@ -78,6 +86,7 @@ public class DiceScript : NetworkBehaviour
         serializer.SerializeValue(ref Type);
         userDice.NetworkSerialize(serializer);
         serializer.SerializeValue(ref Container);
+        serializer.SerializeValue(ref rollerEmail);
         base.OnSynchronize(ref serializer);
     }
 

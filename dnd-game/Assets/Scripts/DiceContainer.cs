@@ -86,7 +86,7 @@ public class DiceContainer : NetworkBehaviour
         var origin = GetRandomOrigin();
         var velocity = startingVelocity + (Target.position - origin) * 1.5f;
 
-        var die = DiceManager.Instance.MakeDie(type, position: origin, containerId: id.Value, velocity: velocity, userDice: senderDice);
+        var die = DiceManager.Instance.MakeDie(type, sender.User, position: origin, containerId: id.Value, velocity: velocity);
     }
 
     GameObject[] Children()

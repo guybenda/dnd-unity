@@ -68,15 +68,16 @@ public class DiceManager : MonoBehaviour
         return die;
     }
 
-    public GameObject MakeDie(DiceType type, UserDice userDice = default, Vector3 position = default, Vector3 velocity = default, int containerId = -1)
+    public GameObject MakeDie(DiceType type, User roller, Vector3 position = default, Vector3 velocity = default, int containerId = -1)
     {
         var die = instantiateDie(position);
 
         var diceScript = die.GetComponent<DiceScript>();
 
-        diceScript.userDice = userDice;
+        diceScript.userDice = roller?.Dice ?? UserDice.Default();
         diceScript.Type = type;
         diceScript.Container = containerId;
+        diceScript.RollerEmail = roller?.Email.ToString() ?? "";
 
         var rb = die.GetComponent<Rigidbody>();
         rb.angularVelocity = getRandomAngularVelocity();

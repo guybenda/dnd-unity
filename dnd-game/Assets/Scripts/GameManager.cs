@@ -103,7 +103,7 @@ public class GameManager : NetworkBehaviour
 
         var playerScript = player.GetComponent<Player>();
         playerScript.Email = email;
-        playerScript.IsAllowedToRoll = true;//clientId == NetworkManager.Singleton.LocalClientId;
+        playerScript.IsAllowedToRoll = clientId == NetworkManager.Singleton.LocalClientId;
 
         Debug.Log($"User {email} client {clientId} finished connection");
     }

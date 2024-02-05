@@ -1,10 +1,11 @@
 using System;
 using Unity.Collections;
 using Unity.Netcode;
+using UnityEngine;
 
 public class Player : NetworkBehaviour
 {
-    public event Action<Player> OnChange;
+    SyncExecutor exec = new();
 
     NetworkVariable<FixedString512Bytes> email = new("");
     public string Email
@@ -13,7 +14,6 @@ public class Player : NetworkBehaviour
         set
         {
             email.Value = value;
-            OnChange?.Invoke(this);
         }
     }
 
@@ -24,20 +24,30 @@ public class Player : NetworkBehaviour
         set
         {
             isAllowedToRoll.Value = value;
-            OnChange?.Invoke(this);
+            isDirty = true;
         }
     }
+
+    bool isDirty = true;
 
     public User User { get; private set; }
 
     void Update()
     {
+        exec.Execute();
 
+        if (isDirty)
+        {
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.UpdatePlayerUI(this);
+                isDirty = false;
+            }
+        }
     }
 
     void Awake()
     {
-        email.OnValueChanged += OnEmailChange;
     }
 
     protected override void OnSynchronize<T>(ref BufferSerializer<T> serializer)
@@ -47,19 +57,41 @@ public class Player : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-
+        LoadUser(Email);
+        email.OnValueChanged += OnEmailChange;
+        isAllowedToRoll.OnValueChanged += (_, _) => isDirty = true;
     }
 
-    async void OnEmailChange(FixedString512Bytes prevValue, FixedString512Bytes newValue)
+    public override void OnNetworkDespawn()
     {
-        if (string.IsNullOrEmpty(newValue.ToString()))
+        UIManager.Instance.RemovePlayerUI(Email);
+    }
+
+    void OnEmailChange(FixedString512Bytes prevValue, FixedString512Bytes newValue)
+    {
+        LoadUser(newValue.ToString());
+    }
+
+    async void LoadUser(string email)
+    {
+        if (string.IsNullOrEmpty(email))
         {
             return;
         }
 
         // There's a race here but the email should only be set once
-        User = await User.Get(newValue.ToString());
+        User = await User.Get(email);
+        isDirty = true;
+    }
 
-        OnChange?.Invoke(this);
+    public void OnChangeCanRoll(bool canRoll)
+    {
+        if (!NetworkManager.Singleton.IsServer)
+        {
+            Debug.LogWarning($"Player {Email} tried to change can roll but is server.");
+            return;
+        }
+
+        IsAllowedToRoll = canRoll;
     }
 }
