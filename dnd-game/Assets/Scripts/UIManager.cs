@@ -132,10 +132,10 @@ public class UIManager : MonoBehaviour
         return PlayersContainer.transform.Find(email)?.GetComponent<PlayerUITile>();
     }
 
-    public void AddPlayerUI(Player player, Action<bool> canRollChangedHandler = null)
+    public void AddPlayerUI(Player player)
     {
         var playerUI = Instantiate(playerUIPrefab, PlayersContainer.transform).GetComponent<PlayerUITile>();
-        playerUI.SetPlayer(player, canRollChangedHandler);
+        playerUI.SetPlayer(player);
 
         // TODO order
         // var order = 
@@ -155,7 +155,7 @@ public class UIManager : MonoBehaviour
         }
         else
         {
-            AddPlayerUI(player, player.OnChangeCanRoll);
+            AddPlayerUI(player);
         }
     }
 
@@ -166,5 +166,11 @@ public class UIManager : MonoBehaviour
         {
             Destroy(playerUI.gameObject);
         }
+    }
+
+    public void OnExit()
+    {
+        NetworkManager.Singleton.Shutdown();
+        SceneTransitionManager.Instance.MainMenu();
     }
 }

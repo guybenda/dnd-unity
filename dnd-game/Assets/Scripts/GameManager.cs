@@ -37,6 +37,8 @@ public class GameManager : NetworkBehaviour
 
         Instance = this;
 
+        if (NetworkManager.Singleton.IsClient) return;
+
         NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
         NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnect;
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
@@ -121,7 +123,7 @@ public class GameManager : NetworkBehaviour
 
     public Player CurrentPlayer()
     {
-        return NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<Player>();
+        return NetworkManager.Singleton?.LocalClient?.PlayerObject?.GetComponent<Player>();
     }
 
     public List<Player> Players()
@@ -167,6 +169,19 @@ public class GameManager : NetworkBehaviour
         }
 
         return null;
+    }
+
+    public ulong ClientIdByEmail(string email)
+    {
+        foreach (var (clientId, e) in clientIdToEmail)
+        {
+            if (e == email)
+            {
+                return clientId;
+            }
+        }
+
+        throw new Exception($"No client found for email {email}");
     }
 
     public void PermitRolling(string email, bool isAllowedToRoll = true)

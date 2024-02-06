@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,11 +13,11 @@ using UnityEngine.SceneManagement;
 
 public class MainMenuScript : MonoBehaviour
 {
+    SyncExecutor exec = new();
     const ushort port = 42069;
 
     static readonly Regex ipRegex = new(@"^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$");
 
-    // Start is called before the first frame update
     void Start()
     {
         NetworkManager.Singleton.NetworkConfig.ConnectionApproval = true;
@@ -24,10 +25,9 @@ public class MainMenuScript : MonoBehaviour
             Encoding.ASCII.GetBytes(AuthManager.Instance.CurrentUser.Email.ToString());
     }
 
-    // Update is called once per frame
     void Update()
     {
-
+        exec.Execute(1);
     }
 
     public void OnClickConnect()
@@ -62,27 +62,26 @@ public class MainMenuScript : MonoBehaviour
             "0.0.0.0"
         );
 
-        var gameManagerPrefab = NetworkManager.Singleton.NetworkConfig.Prefabs.Prefabs.First(p => p.Prefab.name == "GameManager").Prefab;
+        var gameManagerPrefab = Resources.Load<GameObject>("GameManager");
         if (gameManagerPrefab == null)
         {
             Debug.LogError("GameManager prefab not found");
             return;
         }
 
-        var gameManager = Instantiate(gameManagerPrefab);
+        SceneManager.LoadSceneAsync("GameScene", LoadSceneMode.Single).completed += OnGameLoaded;
+    }
 
+    private void OnGameLoaded(AsyncOperation op)
+    {
         if (!NetworkManager.Singleton.StartHost())
         {
-            GameObject.Find("Error").GetComponent<TMP_Text>().text = "Failed to start host";
-            Destroy(gameManager.gameObject);
+            SceneTransitionManager.Instance.MainMenu((_) =>
+            {
+                GameObject.Find("Error").GetComponent<TMP_Text>().text = "Failed to start host";
+            });
             return;
         }
-
-        // gameManager.GetComponent<GameManager>().ConnectPlayer(NetworkManager.Singleton.LocalClientId, AuthManager.Instance.CurrentUser.Email.ToString(), isAllowedToRoll: true);
-        DontDestroyOnLoad(gameManager.gameObject);
-        NetworkManager.Singleton.SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
-
-        // gameManager.GetComponent<NetworkObject>().Spawn();
     }
 
     public void OnClickCustomize()

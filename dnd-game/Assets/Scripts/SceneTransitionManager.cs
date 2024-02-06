@@ -1,4 +1,5 @@
 
+using System;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -38,10 +39,15 @@ public class SceneTransitionManager : MonoBehaviour
     }
 
 
-    public void MainMenu()
+    public void MainMenu(Action<AsyncOperation> onComplete = null)
     {
         NetworkManager.Singleton.Shutdown();
-        SceneManager.LoadScene("MenuScene");
+        var loader = SceneManager.LoadSceneAsync("MenuScene");
+
+        if (onComplete != null)
+        {
+            loader.completed += onComplete;
+        }
     }
 
     public void DiceCustomizer()

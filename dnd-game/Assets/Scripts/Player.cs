@@ -94,4 +94,15 @@ public class Player : NetworkBehaviour
 
         IsAllowedToRoll = canRoll;
     }
+
+    public void OnKick()
+    {
+        if (!NetworkManager.Singleton.IsServer)
+        {
+            Debug.LogWarning($"Player {Email} tried to kick but is not server.");
+            return;
+        }
+
+        NetworkManager.Singleton.DisconnectClient(GameManager.Instance.ClientIdByEmail(Email));
+    }
 }

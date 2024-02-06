@@ -12,6 +12,7 @@ public class PlayerUITile : MonoBehaviour
     public Image MainColor;
     public UnityEngine.UI.Outline SecondaryColor;
     public Toggle CanRoll;
+    public Button KickButton;
 
     public event Action<bool> OnChangeCanRoll;
 
@@ -42,11 +43,14 @@ public class PlayerUITile : MonoBehaviour
         OnChangeCanRoll?.Invoke(value);
     }
 
-    public void SetPlayer(Player player, Action<bool> canRollChangedHandler = null)
+    public void SetPlayer(Player player)
     {
+        var isCurrentPlayer = player.Email == NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<Player>().Email;
+
         if (!didInit)
         {
             transform.name = player.Email;
+            KickButton.onClick.AddListener(player.OnKick);
             didInit = true;
         }
 
@@ -62,9 +66,9 @@ public class PlayerUITile : MonoBehaviour
             CanRoll.SetIsOnWithoutNotify(player.IsAllowedToRoll);
         }
 
-        if (canRollChangedHandler != null)
-        {
-            OnChangeCanRoll += canRollChangedHandler;
-        }
+        KickButton.gameObject.SetActive(NetworkManager.Singleton.IsServer && !isCurrentPlayer);
+        CanRoll.gameObject.SetActive(!(isCurrentPlayer && NetworkManager.Singleton.IsServer));
+
+        OnChangeCanRoll = player.OnChangeCanRoll;
     }
 }
