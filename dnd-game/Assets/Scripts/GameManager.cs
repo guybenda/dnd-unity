@@ -118,6 +118,8 @@ public class GameManager : NetworkBehaviour
             return;
         }
 
+        clientIdToEmail.Remove(clientId);
+
         Debug.Log($"User {email} client {clientId} disconnected");
     }
 
