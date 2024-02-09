@@ -49,6 +49,20 @@ public class User : INetworkSerializable
             Dice = user.Dice.ToString()
         };
     }
+
+    public string ChatColor()
+    {
+        // TODO make better
+        Color.RGBToHSV(Dice.MainColor, out var h, out var s, out var v);
+
+        var amountToDesaturate = Mathf.Min(0.5f, 1 - v);
+        s = Mathf.Max(s - amountToDesaturate, 0f);
+
+        v = Mathf.Max(v, 0.7f);
+
+
+        return ColorUtility.ToHtmlStringRGB(Color.HSVToRGB(h, s, v));
+    }
 }
 
 [FirestoreData]

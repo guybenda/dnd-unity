@@ -109,19 +109,25 @@ public class GameManager : NetworkBehaviour
         playerScript.IsAllowedToRoll = clientId == NetworkManager.Singleton.LocalClientId;
 
         Debug.Log($"User {email} client {clientId} finished connection");
+
+        var message = $"<color=#{user.ChatColor()}>{user.DisplayName}</color> connected";
+        ChatManager.Instance.PublishChatMessageRpc(message);
     }
 
     void OnClientDisconnect(ulong clientId)
     {
-        var email = clientIdToEmail.GetValueOrDefault(clientId);
-        if (email == null)
+        var player = PlayerByClientId(clientId);
+        if (player == null)
         {
             return;
         }
 
         clientIdToEmail.Remove(clientId);
 
-        Debug.Log($"User {email} client {clientId} disconnected");
+        Debug.Log($"User {player.Email} client {clientId} disconnected");
+
+        var message = $"<color=#{player.User.ChatColor()}>{player.User.DisplayName}</color> disconnected";
+        ChatManager.Instance.PublishChatMessageRpc(message);
     }
 
     public Player CurrentPlayer()

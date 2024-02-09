@@ -1,31 +1,79 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 public class ChatManager : NetworkBehaviour
 {
+    SyncExecutor exec = new();
+
     public static ChatManager Instance { get; private set; }
 
-    public bool IsHistoryVisible { get; private set; } = false;
+    public GameObject MessagesContainer;
+    public TMP_InputField ChatInput;
+
+
+    public bool IsHistoryVisible
+    {
+        get
+        {
+            return isTyping;
+        }
+    }
 
     const int maxMessageLength = 140;
     const float messageCooldown = 0.5f;
     Dictionary<ulong, float> clientIdToMessageCooldown = new();
+    bool isTyping = false;
 
-    GameObject MessagePrefab;
+    NonDraggableScrollRect scrollRect;
+
+    GameObject messagePrefab;
+
 
     void Start()
     {
-
+        ChatInput.gameObject.SetActive(false);
     }
 
     void Update()
     {
-        foreach (var clientId in clientIdToMessageCooldown.Keys)
+        exec.Execute();
+
+        foreach (var clientId in clientIdToMessageCooldown.Keys.ToList())
         {
             clientIdToMessageCooldown[clientId] -= Time.deltaTime;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+        {
+            isTyping = !isTyping;
+
+            ChatInput.gameObject.SetActive(isTyping);
+            scrollRect.verticalNormalizedPosition = 0f;
+            scrollRect.vertical = isTyping;
+
+            if (isTyping)
+            {
+                ChatInput.ActivateInputField();
+            }
+            else
+            {
+
+                var message = ChatInput.text;
+                if (message.Length > 0)
+                {
+                    SendChatMessageRpc(message);
+                }
+            }
+
+            ChatInput.text = string.Empty;
+
         }
     }
 
@@ -38,7 +86,9 @@ public class ChatManager : NetworkBehaviour
         }
         Instance = this;
 
-        MessagePrefab = Resources.Load<GameObject>("ChatMessage");
+        messagePrefab = Resources.Load<GameObject>("ChatMessagePrefab");
+
+        scrollRect = GetComponent<NonDraggableScrollRect>();
     }
 
     public override void OnNetworkSpawn()
@@ -54,8 +104,10 @@ public class ChatManager : NetworkBehaviour
     }
 
 
+
+
     [Rpc(SendTo.Server)]
-    public void SendChatMessageRpc(string message, RpcParams rpcParams)
+    public void SendChatMessageRpc(string message, RpcParams rpcParams = default)
     {
         var clientId = rpcParams.Receive.SenderClientId;
         var sender = GameManager.Instance.PlayerByClientId(rpcParams.Receive.SenderClientId);
@@ -77,13 +129,16 @@ public class ChatManager : NetworkBehaviour
             return;
         }
 
-        message = message.Trim()[..maxMessageLength];
+        if (message.Length > maxMessageLength)
+        {
+            message = message.Trim()[..maxMessageLength];
+        }
 
         PublishChatMessage(message, sender);
     }
 
     [Rpc(SendTo.Everyone, AllowTargetOverride = true, RequireOwnership = true, DeferLocal = true)]
-    void PublishChatMessageRpc(string message, RpcParams rpcParams = default)
+    public void PublishChatMessageRpc(string message, RpcParams rpcParams = default)
     {
         InstantiateMessage(message);
     }
@@ -114,15 +169,15 @@ public class ChatManager : NetworkBehaviour
 
     void PublishChatMessage(string message, Player sender)
     {
-        var playerColor = ColorUtility.ToHtmlStringRGB(sender.ChatColor());
-        var messageFormatted = $"[<color={playerColor}>{sender.User.DisplayName}</color>]: <noparse>{message}</noparse>";
+        var playerColor = sender.User.ChatColor();
+        var messageFormatted = $"[<color=#{playerColor}>{sender.User.DisplayName}</color>]: <noparse>{message}</noparse>";
 
         PublishChatMessageRpc(messageFormatted);
     }
 
     void InstantiateMessage(string message)
     {
-        var messageObject = Instantiate(MessagePrefab, transform);
+        var messageObject = Instantiate(messagePrefab, MessagesContainer.transform);
         var texts = messageObject.GetComponentsInChildren<TextMeshProUGUI>();
         texts[0].text = message;
         texts[1].text = message;

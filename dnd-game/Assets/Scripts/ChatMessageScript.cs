@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class ChatMessageScript : MonoBehaviour
 {
-    const float fadeOutDelay = 5f;
+    const float fadeOutDelay = 8f;
     const float fadeOutTime = 2f;
     const float initialBackgroundAlpha = 0.5f;
 

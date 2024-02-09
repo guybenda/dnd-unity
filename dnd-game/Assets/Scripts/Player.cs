@@ -104,14 +104,8 @@ public class Player : NetworkBehaviour
         }
 
         NetworkManager.Singleton.DisconnectClient(GameManager.Instance.ClientIdByEmail(Email));
-    }
 
-    public Color ChatColor()
-    {
-        // TODO make better
-        Color.RGBToHSV(User.Dice.MainColor, out var h, out var s, out var v);
-        v = Mathf.Max(v, 0.5f);
-
-        return Color.HSVToRGB(h, s, v);
+        var message = $"<color=#{User.ChatColor()}>{User.DisplayName}</color> has been kicked";
+        ChatManager.Instance.PublishChatMessageRpc(message);
     }
 }
