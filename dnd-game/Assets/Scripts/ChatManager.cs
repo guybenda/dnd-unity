@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,21 +18,14 @@ public class ChatManager : NetworkBehaviour
     public GameObject MessagesContainer;
     public TMP_InputField ChatInput;
 
-
-    public bool IsHistoryVisible
-    {
-        get
-        {
-            return isTyping;
-        }
-    }
+    public bool IsTyping { get; private set; }
 
     const int maxMessageLength = 140;
     const float messageCooldown = 0.5f;
     Dictionary<ulong, float> clientIdToMessageCooldown = new();
-    bool isTyping = false;
 
     NonDraggableScrollRect scrollRect;
+    ChatCommandManager chatCommandManager;
 
     GameObject messagePrefab;
 
@@ -52,13 +46,13 @@ public class ChatManager : NetworkBehaviour
 
         if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
         {
-            isTyping = !isTyping;
+            IsTyping = !IsTyping;
 
-            ChatInput.gameObject.SetActive(isTyping);
+            ChatInput.gameObject.SetActive(IsTyping);
             scrollRect.verticalNormalizedPosition = 0f;
-            scrollRect.vertical = isTyping;
+            scrollRect.vertical = IsTyping;
 
-            if (isTyping)
+            if (IsTyping)
             {
                 ChatInput.ActivateInputField();
             }
@@ -95,6 +89,7 @@ public class ChatManager : NetworkBehaviour
     {
         if (!IsServer) return;
 
+        chatCommandManager = gameObject.AddComponent<ChatCommandManager>();
     }
 
     public override void OnDestroy()
@@ -126,6 +121,12 @@ public class ChatManager : NetworkBehaviour
         if (!CanClientChat(clientId))
         {
             PublishChatMessageRpc("<color=red>Please wait before sending another message</color>", RpcTarget.Single(clientId, RpcTargetUse.Temp));
+            return;
+        }
+
+        if (message[0] == '/')
+        {
+            chatCommandManager.ProcessCommand(message, sender, clientId);
             return;
         }
 
@@ -169,10 +170,14 @@ public class ChatManager : NetworkBehaviour
 
     void PublishChatMessage(string message, Player sender)
     {
-        var playerColor = sender.User.ChatColor();
-        var messageFormatted = $"[<color=#{playerColor}>{sender.User.DisplayName}</color>]: <noparse>{message}</noparse>";
+        var messageFormatted = $"[{sender.User.ColoredDisplayName()}]: <noparse>{message}</noparse>";
 
         PublishChatMessageRpc(messageFormatted);
+    }
+
+    public void SendMessageToClient(string message, ulong clientId)
+    {
+        PublishChatMessageRpc(message, RpcTarget.Single(clientId, RpcTargetUse.Temp));
     }
 
     void InstantiateMessage(string message)

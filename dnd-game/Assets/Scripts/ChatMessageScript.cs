@@ -24,7 +24,7 @@ public class ChatMessageScript : MonoBehaviour
     {
         if (!ChatManager.Instance) return;
 
-        if (ChatManager.Instance.IsHistoryVisible)
+        if (ChatManager.Instance.IsTyping)
         {
             Text.color = new(1, 1, 1, 1);
             Background.color = new(0, 0, 0, initialBackgroundAlpha);

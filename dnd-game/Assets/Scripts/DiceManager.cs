@@ -68,7 +68,7 @@ public class DiceManager : MonoBehaviour
         return die;
     }
 
-    public GameObject MakeDie(DiceType type, User roller, Vector3 position = default, Vector3 velocity = default, int containerId = -1)
+    public DiceScript MakeDie(DiceType type, User roller, Vector3 position = default, Vector3 velocity = default, uint rollId = 0)
     {
         var die = instantiateDie(position);
 
@@ -76,7 +76,7 @@ public class DiceManager : MonoBehaviour
 
         diceScript.userDice = roller?.Dice ?? UserDice.Default();
         diceScript.Type = type;
-        diceScript.Container = containerId;
+        diceScript.RollId = rollId;
         diceScript.RollerEmail = roller?.Email.ToString() ?? "";
 
         var rb = die.GetComponent<Rigidbody>();
@@ -85,7 +85,7 @@ public class DiceManager : MonoBehaviour
 
         die.GetComponent<NetworkObject>().Spawn();
 
-        return die;
+        return diceScript;
     }
 
     public void ResetDicePosition(GameObject die, Vector3 position)

@@ -63,6 +63,11 @@ public class User : INetworkSerializable
 
         return ColorUtility.ToHtmlStringRGB(Color.HSVToRGB(h, s, v));
     }
+
+    public string ColoredDisplayName()
+    {
+        return $"<color=#{ChatColor()}>{DisplayName}</color>";
+    }
 }
 
 [FirestoreData]

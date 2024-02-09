@@ -11,7 +11,7 @@ public class DiceContainer : NetworkBehaviour
 {
     readonly Vector3 startingVelocity = new(0, 5, 0);
 
-    NetworkVariable<int> id = new(-1);
+    // NetworkVariable<int> id = new(-1);
     NetworkVariable<int> total = new(0);
     NetworkVariable<FixedString512Bytes> breakdown = new("");
 
@@ -63,7 +63,7 @@ public class DiceContainer : NetworkBehaviour
     {
         if (!IsServer) return;
 
-        id.Value = Random.Range(0, int.MaxValue);
+        // id.Value = Random.Range(0, int.MaxValue);
     }
 
     Vector3 GetRandomOrigin()
@@ -81,22 +81,26 @@ public class DiceContainer : NetworkBehaviour
             return;
         }
 
-        var senderDice = sender.User.Dice;
+        NewDice(type, sender);
+    }
 
+    public DiceScript NewDice(DiceType type, Player sender, uint rollId = 0)
+    {
         var origin = GetRandomOrigin();
         var velocity = startingVelocity + (Target.position - origin) * 1.5f;
 
-        var die = DiceManager.Instance.MakeDie(type, sender.User, position: origin, containerId: id.Value, velocity: velocity);
+        var die = DiceManager.Instance.MakeDie(type, sender.User, position: origin, velocity: velocity, rollId: rollId);
+        return die;
     }
 
-    GameObject[] Children()
+    GameObject[] GetCurrentDice(uint? rollId = null)
     {
         var dice = GameObject.FindGameObjectsWithTag("Dice");
         var children = new List<GameObject>(dice.Length);
 
         for (int i = 0; i < dice.Length; i++)
         {
-            if (dice[i].GetComponent<DiceScript>().Container == id.Value)
+            if (!rollId.HasValue || dice[i].GetComponent<DiceScript>().RollId == rollId.Value)
             {
                 children.Add(dice[i]);
             }
@@ -115,7 +119,7 @@ public class DiceContainer : NetworkBehaviour
             return;
         }
 
-        foreach (var child in Children())
+        foreach (var child in GetCurrentDice())
         {
             child.gameObject.GetComponent<NetworkObject>().Despawn();
         }
@@ -131,7 +135,7 @@ public class DiceContainer : NetworkBehaviour
     public (int total, string breakdown) Total()
     {
         var sum = 0;
-        var dice = Children();
+        var dice = GetCurrentDice();
         var counts = new Dictionary<DiceType, int>{
             { DiceType.D4, 0 },
             { DiceType.D6, 0 },

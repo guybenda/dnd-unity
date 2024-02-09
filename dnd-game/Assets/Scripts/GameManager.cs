@@ -110,7 +110,7 @@ public class GameManager : NetworkBehaviour
 
         Debug.Log($"User {email} client {clientId} finished connection");
 
-        var message = $"<color=#{user.ChatColor()}>{user.DisplayName}</color> connected";
+        var message = $"{user.ColoredDisplayName()} connected";
         ChatManager.Instance.PublishChatMessageRpc(message);
     }
 
@@ -126,7 +126,7 @@ public class GameManager : NetworkBehaviour
 
         Debug.Log($"User {player.Email} client {clientId} disconnected");
 
-        var message = $"<color=#{player.User.ChatColor()}>{player.User.DisplayName}</color> disconnected";
+        var message = $"{player.User.ColoredDisplayName()} disconnected";
         ChatManager.Instance.PublishChatMessageRpc(message);
     }
 

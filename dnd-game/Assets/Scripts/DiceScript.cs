@@ -11,7 +11,10 @@ public class DiceScript : NetworkBehaviour
 {
     public DiceType Type;
     public UserDice userDice;
-    public int Container;
+    public uint RollId;
+
+    const int minimumStaticFrames = 10;
+    int currentStaticFrames = 0;
 
     FixedString512Bytes rollerEmail;
     public string RollerEmail
@@ -23,7 +26,6 @@ public class DiceScript : NetworkBehaviour
     Outline outline;
     Rigidbody rb;
     MeshRenderer meshRenderer;
-    // NetworkVariable<bool> isStatic = new(false);
 
     bool shouldUpdateOutline = true;
 
@@ -38,17 +40,16 @@ public class DiceScript : NetworkBehaviour
         }
     }
 
-    NetworkVariable<bool> isStatic = new(false);
-
+    NetworkVariable<bool> m_isStatic = new(false);
     public bool IsStatic
     {
         get
         {
-            return isStatic.Value;
+            return m_isStatic.Value;
         }
         private set
         {
-            isStatic.Value = value;
+            m_isStatic.Value = value;
         }
     }
 
@@ -78,14 +79,27 @@ public class DiceScript : NetworkBehaviour
     {
         if (!IsServer) return;
 
-        IsStatic = rb.velocity.magnitude <= 0.05f && rb.angularVelocity.magnitude <= 0.05f;
+        var isStaticTemp = rb.velocity.magnitude <= 0.05f && rb.angularVelocity.magnitude <= 0.05f;
+        if (isStaticTemp)
+        {
+            currentStaticFrames++;
+            if (currentStaticFrames >= minimumStaticFrames)
+            {
+                IsStatic = true;
+            }
+        }
+        else
+        {
+            currentStaticFrames = 0;
+            IsStatic = false;
+        }
     }
 
     protected override void OnSynchronize<T>(ref BufferSerializer<T> serializer)
     {
         serializer.SerializeValue(ref Type);
         userDice.NetworkSerialize(serializer);
-        serializer.SerializeValue(ref Container);
+        serializer.SerializeValue(ref RollId);
         serializer.SerializeValue(ref rollerEmail);
         base.OnSynchronize(ref serializer);
     }

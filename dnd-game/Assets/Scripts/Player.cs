@@ -105,7 +105,7 @@ public class Player : NetworkBehaviour
 
         NetworkManager.Singleton.DisconnectClient(GameManager.Instance.ClientIdByEmail(Email));
 
-        var message = $"<color=#{User.ChatColor()}>{User.DisplayName}</color> has been kicked";
+        var message = $"{User.ColoredDisplayName()} has been kicked";
         ChatManager.Instance.PublishChatMessageRpc(message);
     }
 }
