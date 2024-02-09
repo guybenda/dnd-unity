@@ -13,6 +13,7 @@ public class GameManager : NetworkBehaviour
 
     public static GameManager Instance { get; private set; }
 
+    // This can be moved into Player
     Dictionary<ulong, string> clientIdToEmail = new();
 
     // Start is called before the first frame update

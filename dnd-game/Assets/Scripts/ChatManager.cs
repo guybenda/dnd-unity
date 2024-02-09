@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -7,8 +8,13 @@ public class ChatManager : NetworkBehaviour
 {
     public static ChatManager Instance { get; private set; }
 
+    public bool IsHistoryVisible { get; private set; } = false;
+
+    const int maxMessageLength = 140;
     const float messageCooldown = 0.5f;
     Dictionary<ulong, float> clientIdToMessageCooldown = new();
+
+    GameObject MessagePrefab;
 
     void Start()
     {
@@ -31,6 +37,8 @@ public class ChatManager : NetworkBehaviour
             return;
         }
         Instance = this;
+
+        MessagePrefab = Resources.Load<GameObject>("ChatMessage");
     }
 
     public override void OnNetworkSpawn()
@@ -59,23 +67,25 @@ public class ChatManager : NetworkBehaviour
         if (sender.User == null)
         {
             Debug.Log($"player ${sender.Email} has no user when sending chat message");
-            // TODO send reject
+            PublishChatMessageRpc("<color=red>Failed to send message</color>", RpcTarget.Single(clientId, RpcTargetUse.Temp));
             return;
         }
 
         if (!CanClientChat(clientId))
         {
-            // TODO send reject
+            PublishChatMessageRpc("<color=red>Please wait before sending another message</color>", RpcTarget.Single(clientId, RpcTargetUse.Temp));
             return;
         }
 
+        message = message.Trim()[..maxMessageLength];
 
+        PublishChatMessage(message, sender);
     }
 
     [Rpc(SendTo.Everyone, AllowTargetOverride = true, RequireOwnership = true, DeferLocal = true)]
     void PublishChatMessageRpc(string message, RpcParams rpcParams = default)
     {
-
+        InstantiateMessage(message);
     }
 
     bool CanClientChat(ulong sender)
@@ -110,4 +120,11 @@ public class ChatManager : NetworkBehaviour
         PublishChatMessageRpc(messageFormatted);
     }
 
+    void InstantiateMessage(string message)
+    {
+        var messageObject = Instantiate(MessagePrefab, transform);
+        var texts = messageObject.GetComponentsInChildren<TextMeshProUGUI>();
+        texts[0].text = message;
+        texts[1].text = message;
+    }
 }
