@@ -157,6 +157,10 @@ public class UIManager : MonoBehaviour
         {
             AddPlayerUI(player);
         }
+
+        if (player != GameManager.Instance.CurrentPlayer()) return;
+
+        RollButtons.SetActive(player.IsAllowedToRoll);
     }
 
     public void RemovePlayerUI(string email)

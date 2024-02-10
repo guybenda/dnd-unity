@@ -10,7 +10,8 @@ using UnityEngine.UI;
 
 public class ChatCommandManager : MonoBehaviour
 {
-    const float diceRollInterval = 0.2f;
+    const float diceRollInterval = 0.1f;
+    const int maxDice = 100;
     readonly Dictionary<string, Func<string, Player, (bool, string)>> commands = new();
 
     DiceContainer diceContainer;
@@ -29,6 +30,7 @@ public class ChatCommandManager : MonoBehaviour
     {
         commands.Add("roll", RollCommand);
         commands.Add("clear", ClearCommand);
+        commands.Add("help", HelpCommand);
 
         diceContainer = GameObject.Find("DiceContainer").GetComponent<DiceContainer>();
     }
@@ -45,10 +47,14 @@ public class ChatCommandManager : MonoBehaviour
             return;
         }
 
-        var (success, errorMessage) = commandFunc(commandArgs, player);
+        var (success, message) = commandFunc(commandArgs, player);
         if (!success)
         {
-            ChatManager.Instance.SendMessageToClient($"<color=red>{errorMessage}</color>", clientId);
+            ChatManager.Instance.SendMessageToClient($"<color=red>{message}</color>", clientId);
+        }
+        else if (message != null)
+        {
+            ChatManager.Instance.SendMessageToClient($"{message}", clientId);
         }
     }
 
@@ -63,6 +69,12 @@ public class ChatCommandManager : MonoBehaviour
         if (rollCommands == null)
         {
             return (false, "Syntax error in roll command");
+        }
+
+        var totalDice = rollCommands.Sum(r => r.Count);
+        if (totalDice > maxDice)
+        {
+            return (false, $"You may not roll more than {maxDice} dice at once");
         }
 
         var formattedRolls = DndCommon.RollCommand.ListToString(rollCommands);
@@ -89,11 +101,14 @@ public class ChatCommandManager : MonoBehaviour
     IEnumerator RollAndWaitForResults(List<RollCommand> rollCommands, Player player)
     {
         List<DiceScript> dice = new();
+        Dictionary<uint, List<int>> results = new();
         foreach (var rollCommand in rollCommands)
         {
             for (int i = 0; i < rollCommand.Count; i++)
             {
                 yield return new WaitForSeconds(diceRollInterval);
+                if (!player) yield break;
+
                 var die = diceContainer.NewDice(rollCommand.Type, player, rollCommand.Id);
                 dice.Add(die);
             }
@@ -104,6 +119,7 @@ public class ChatCommandManager : MonoBehaviour
         while (!allDiceStopped)
         {
             yield return new WaitForSeconds(0.5f);
+            if (!player) yield break;
 
             if (dice.All(d => d.IsStatic))
             {
@@ -111,9 +127,41 @@ public class ChatCommandManager : MonoBehaviour
             }
         }
 
-        // TODO keep and drop logic
-        var total = dice.Sum(d => d.Result());
+        foreach (var die in dice)
+        {
+            if (!results.ContainsKey(die.RollId))
+            {
+                results[die.RollId] = new List<int>();
+            }
+
+            results[die.RollId].Add(die.Result());
+        }
+
+        int total = 0;
+
+        foreach (var rollCommand in rollCommands)
+        {
+            var orderedResults = results[rollCommand.Id].OrderBy(r => r);
+
+            if (rollCommand.Keep == null)
+            {
+                total += orderedResults.Sum();
+                continue;
+            }
+
+            var keepCount = rollCommand.Keep.Keep ? (int)rollCommand.Keep.Count : results[rollCommand.Id].Count - (int)rollCommand.Keep.Count;
+
+            var chosenResults = rollCommand.Keep.Highest ? orderedResults.TakeLast(keepCount) : orderedResults.Take(keepCount);
+
+            total += chosenResults.Sum();
+        }
 
         ChatManager.Instance.PublishChatMessageRpc($"{player.User.ColoredDisplayName()}'s roll totaled: {total}");
+    }
+
+
+    (bool, string) HelpCommand(string command, Player player)
+    {
+        return (true, $"Available commands: {string.Join(", ", commands.Keys)}");
     }
 }

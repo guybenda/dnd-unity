@@ -132,7 +132,7 @@ public class GameManager : NetworkBehaviour
 
     public Player CurrentPlayer()
     {
-        return NetworkManager.Singleton?.LocalClient?.PlayerObject?.GetComponent<Player>();
+        return NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<Player>();
     }
 
     public List<Player> Players()

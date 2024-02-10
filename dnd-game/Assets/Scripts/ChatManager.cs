@@ -67,7 +67,17 @@ public class ChatManager : NetworkBehaviour
             }
 
             ChatInput.text = string.Empty;
+        }
+        else if (!IsTyping && Input.GetKeyDown(KeyCode.Slash))
+        {
+            IsTyping = !IsTyping;
 
+            ChatInput.gameObject.SetActive(IsTyping);
+            scrollRect.verticalNormalizedPosition = 0f;
+            scrollRect.vertical = IsTyping;
+            ChatInput.ActivateInputField();
+            ChatInput.text = "/";
+            ChatInput.caretPosition = 1;
         }
     }
 

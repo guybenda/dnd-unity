@@ -13,7 +13,7 @@ public class DiceScript : NetworkBehaviour
     public UserDice userDice;
     public uint RollId;
 
-    const int minimumStaticFrames = 10;
+    const int minimumStaticFrames = 20;
     int currentStaticFrames = 0;
 
     FixedString512Bytes rollerEmail;

@@ -35,7 +35,14 @@ namespace DndCommon
 
         public class DropKeepDice
         {
+            /// <summary>
+            /// Keep or drop
+            /// </summary>
             public bool Keep = true;
+
+            /// <summary>
+            /// Highest or lowest
+            /// </summary>
             public bool Highest = true;
             public uint Count = 1;
         }
@@ -52,7 +59,7 @@ namespace DndCommon
 
             builder.Append(Keep.Keep ? 'k' : 'd');
             builder.Append(Keep.Highest ? 'h' : 'l');
-            if (Keep.Count > 1) builder.Append(Keep.Count);
+            builder.Append(Keep.Count);
 
             return builder.ToString();
         }
@@ -66,7 +73,7 @@ namespace DndCommon
         {
             if (!command.Contains('d')) return null;
 
-            var rollParts = command.Split('d');
+            var rollParts = command.Split('d', 2);
 
             if (rollParts.Length != 2) return null;
 
@@ -76,6 +83,7 @@ namespace DndCommon
 
             var dropKeepResult = ParseTypePart(rollParts[1]);
             if (!dropKeepResult.HasValue) return null;
+            if (dropKeepResult.Value.keep != null && dropKeepResult.Value.keep.Count > count) return null;
 
             return new RollCommand
             {
@@ -115,12 +123,14 @@ namespace DndCommon
 
             string countPart;
 
-            if (dropKeepParts[1] == "l")
+            if (dropKeepParts[1] == "") return null;
+
+            if (dropKeepParts[1][0] == 'l')
             {
                 keep.Highest = false;
                 countPart = dropKeepParts[1][1..];
             }
-            else if (dropKeepParts[1] == "h")
+            else if (dropKeepParts[1][0] == 'h')
             {
                 keep.Highest = true;
                 countPart = dropKeepParts[1][1..];
@@ -133,8 +143,9 @@ namespace DndCommon
             if (!string.IsNullOrEmpty(countPart) && !uint.TryParse(countPart, out keep.Count))
                 return null;
 
+            if (keep.Count == 0) return null;
 
-            if (!int.TryParse(command, out typeNum)) return null;
+            if (!int.TryParse(dropKeepParts[0], out typeNum)) return null;
             if (!Enum.IsDefined(typeof(DiceType), typeNum)) return null;
 
             return ((DiceType)typeNum, keep);

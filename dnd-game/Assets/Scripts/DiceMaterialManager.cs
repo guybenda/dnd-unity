@@ -5,7 +5,6 @@ using UnityEngine;
 
 public class DiceMaterialManager : MonoBehaviour
 {
-    const int SIZE = 2048;
     public static DiceMaterialManager Instance { get; private set; }
 
     readonly Dictionary<UserDice, DiceMaterial> diceMaterials = new();
