@@ -22,5 +22,6 @@ public class EverythingManager : MonoBehaviour
         gameObject.AddComponent<AuthManager>();
         gameObject.AddComponent<SceneTransitionManager>();
         gameObject.AddComponent<DiceMaterialManager>();
+        gameObject.AddComponent<GraphicsQualityManager>();
     }
 }

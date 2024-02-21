@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class UIManager : MonoBehaviour
 {
@@ -28,7 +29,8 @@ public class UIManager : MonoBehaviour
 
     void Start()
     {
-
+        MainGUI.SetActive(true);
+        TabGUI.SetActive(false);
     }
 
     void Awake()
@@ -58,6 +60,91 @@ public class UIManager : MonoBehaviour
     }
 
     void Update()
+    {
+        HandleTab();
+
+        if (!IsShowingTabMenu())
+        {
+            HandleDiceHover();
+        }
+    }
+
+    void FixedUpdate()
+    {
+        var total = diceContainer.DiceTotal;
+        var breakdown = diceContainer.DiceBreakdown;
+
+        if (breakdown == "")
+        {
+            resultText.text = "";
+            return;
+        }
+
+        resultText.text = $"{breakdown} = {total}";
+    }
+
+    public PlayerUITile GetPlayerUIByEmail(string email)
+    {
+        return PlayersContainer.transform.Find(email)?.GetComponent<PlayerUITile>();
+    }
+
+    public void AddPlayerUI(Player player)
+    {
+        var playerUI = Instantiate(playerUIPrefab, PlayersContainer.transform).GetComponent<PlayerUITile>();
+        playerUI.SetPlayer(player);
+    }
+
+    public void UpdatePlayerUI(Player player)
+    {
+        if (string.IsNullOrEmpty(player.Email))
+        {
+            return;
+        }
+
+        var playerUI = GetPlayerUIByEmail(player.Email);
+        if (playerUI != null)
+        {
+            playerUI.SetPlayer(player);
+        }
+        else
+        {
+            AddPlayerUI(player);
+        }
+
+        if (player != GameManager.Instance.CurrentPlayer()) return;
+
+        RollButtons.SetActive(player.IsAllowedToRoll);
+    }
+
+    public void RemovePlayerUI(string email)
+    {
+        var playerUI = GetPlayerUIByEmail(email);
+        if (playerUI != null)
+        {
+            Destroy(playerUI.gameObject);
+        }
+    }
+
+    public void OnExit()
+    {
+        SceneTransitionManager.Instance.MainMenu((_) => NetworkManager.Singleton.Shutdown());
+    }
+
+    void HandleTab()
+    {
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            MainGUI.SetActive(false);
+            TabGUI.SetActive(true);
+        }
+        if (Input.GetKeyUp(KeyCode.Tab))
+        {
+            MainGUI.SetActive(true);
+            TabGUI.SetActive(false);
+        }
+    }
+
+    void HandleDiceHover()
     {
         var mousePos = Input.mousePosition;
         var ray = cam.ScreenPointToRay(mousePos);
@@ -113,68 +200,13 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    void FixedUpdate()
+    bool IsShowingTabMenu()
     {
-        var total = diceContainer.DiceTotal;
-        var breakdown = diceContainer.DiceBreakdown;
-
-        if (breakdown == "")
-        {
-            resultText.text = "";
-            return;
-        }
-
-        resultText.text = $"{breakdown} = {total}";
+        return TabGUI.activeSelf;
     }
 
-    public PlayerUITile GetPlayerUIByEmail(string email)
+    public void OnChangeQuality(int quality)
     {
-        return PlayersContainer.transform.Find(email)?.GetComponent<PlayerUITile>();
-    }
-
-    public void AddPlayerUI(Player player)
-    {
-        var playerUI = Instantiate(playerUIPrefab, PlayersContainer.transform).GetComponent<PlayerUITile>();
-        playerUI.SetPlayer(player);
-
-        // TODO order
-        // var order = 
-    }
-
-    public void UpdatePlayerUI(Player player)
-    {
-        if (string.IsNullOrEmpty(player.Email))
-        {
-            return;
-        }
-
-        var playerUI = GetPlayerUIByEmail(player.Email);
-        if (playerUI != null)
-        {
-            playerUI.SetPlayer(player);
-        }
-        else
-        {
-            AddPlayerUI(player);
-        }
-
-        if (player != GameManager.Instance.CurrentPlayer()) return;
-
-        RollButtons.SetActive(player.IsAllowedToRoll);
-    }
-
-    public void RemovePlayerUI(string email)
-    {
-        var playerUI = GetPlayerUIByEmail(email);
-        if (playerUI != null)
-        {
-            Destroy(playerUI.gameObject);
-        }
-    }
-
-    public void OnExit()
-    {
-        NetworkManager.Singleton.Shutdown();
-        SceneTransitionManager.Instance.MainMenu();
+        GraphicsQualityManager.Instance.SetHighQuality(quality == 0);
     }
 }

@@ -235,8 +235,9 @@ public class DiceManager : MonoBehaviour
         return lowestIdx + 1;
     }
 
-    public Mesh DieMesh(DiceType type, DiceQuality quality = DiceQuality.High)
+    public Mesh DieMesh(DiceType type, DiceQuality quality = DiceQuality.Medium)
     {
+
         return quality switch
         {
             DiceQuality.Low => meshesLow[type],

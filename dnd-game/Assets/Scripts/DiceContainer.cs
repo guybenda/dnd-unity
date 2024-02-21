@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using DndCommon;
 using Unity.Collections;
 using Unity.Netcode;
@@ -131,12 +132,7 @@ public class DiceContainer : NetworkBehaviour
     }
 
 
-
-    public (int total, string breakdown) Total()
-    {
-        var sum = 0;
-        var dice = GetCurrentDice();
-        var counts = new Dictionary<DiceType, int>{
+    readonly Dictionary<DiceType, int> counts = new(){
             { DiceType.D4, 0 },
             { DiceType.D6, 0 },
             { DiceType.D8, 0 },
@@ -145,6 +141,12 @@ public class DiceContainer : NetworkBehaviour
             { DiceType.D20, 0 },
             { DiceType.D100, 0 },
         };
+
+    public (int total, string breakdown) Total()
+    {
+        var sum = 0;
+        var dice = GetCurrentDice();
+        Dice.types.ForEach(d => counts[d] = 0);
 
         for (var i = 0; i < dice.Length; i++)
         {
@@ -158,9 +160,26 @@ public class DiceContainer : NetworkBehaviour
             counts[die.Type]++;
         }
 
-        var countStr = string.Join(" + ", counts.Where(a => a.Value > 0).Select(a => $"{a.Value}d{(int)a.Key}"));
+        var builder = new StringBuilder();
 
-        return (sum, countStr);
+        var first = true;
+        foreach (var (key, value) in counts)
+        {
+            if (value > 0)
+            {
+                builder.Append($"{value}d{(int)key}");
+                if (!first)
+                {
+                    builder.Append(" + ");
+                }
+                else
+                {
+                    first = false;
+                }
+            }
+        }
+
+        return (sum, builder.ToString());
     }
 
     public void D4()

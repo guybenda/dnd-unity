@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   NetworkConfig:
-    ProtocolVersion: 1
+    ProtocolVersion: 2
     NetworkTransport: {fileID: 1333660316599819157}
     PlayerPrefab: {fileID: 3915921446571405990, guid: 1877344f7f16ad04c867b793a675907c, type: 3}
     Prefabs:
@@ -65,7 +65,7 @@ MonoBehaviour:
     RecycleNetworkIds: 0
     NetworkIdRecycleDelay: 120
     RpcHashSize: 0
-    LoadSceneTimeOut: 120
+    LoadSceneTimeOut: 10
     SpawnTimeout: 1
     EnableNetworkLogs: 1
     OldPrefabList: []
@@ -90,8 +90,8 @@ MonoBehaviour:
   m_MaxPayloadSize: 6144
   m_HeartbeatTimeoutMS: 500
   m_ConnectTimeoutMS: 1000
-  m_MaxConnectAttempts: 10
-  m_DisconnectTimeoutMS: 30000
+  m_MaxConnectAttempts: 5
+  m_DisconnectTimeoutMS: 10000
   ConnectionData:
     Address: 127.0.0.1
     Port: 42069

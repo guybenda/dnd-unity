@@ -13,6 +13,9 @@ using UnityEngine.SceneManagement;
 
 public class MainMenuScript : MonoBehaviour
 {
+    public TMP_Text ErrorText;
+    public GameObject Loader;
+
     SyncExecutor exec = new();
     const ushort port = 42069;
 
@@ -23,6 +26,9 @@ public class MainMenuScript : MonoBehaviour
         NetworkManager.Singleton.NetworkConfig.ConnectionApproval = true;
         NetworkManager.Singleton.NetworkConfig.ConnectionData =
             Encoding.ASCII.GetBytes(AuthManager.Instance.CurrentUser.Email.ToString());
+
+        SetLoading(false);
+        SetError();
     }
 
     void Update()
@@ -30,16 +36,37 @@ public class MainMenuScript : MonoBehaviour
         exec.Execute(1);
     }
 
+    void Awake()
+    {
+
+    }
+
     public void OnClickConnect()
     {
-        var ip = GetComponentInChildren<TMP_InputField>().text;
+        SetError();
+
+        var ip = GetComponentInChildren<TMP_InputField>().text.Trim();
         if (string.IsNullOrWhiteSpace(ip))
         {
             ip = "127.0.0.1";
         }
 
-        if (!ipRegex.IsMatch(ip)) return;
+        if (!ipRegex.IsMatch(ip))
+        {
+            SetError("Invalid IP address");
+            return;
+        }
 
+        SetLoading(true);
+
+        exec.Enqueue(() =>
+        {
+            Connect(ip);
+        });
+    }
+
+    void Connect(string ip)
+    {
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(
             ip,
             port
@@ -47,15 +74,32 @@ public class MainMenuScript : MonoBehaviour
 
         if (!NetworkManager.Singleton.StartClient())
         {
-            GameObject.Find("Error").GetComponent<TMP_Text>().text = "Failed to connect to server";
+            SetError("Failed to connect to server");
+            SetLoading(false);
             return;
         }
 
-        SceneTransitionManager.Instance.RegisterDisconnectCallback();
+        NetworkManager.Singleton.OnConnectionEvent += ConnectEvent;
+    }
+
+    void ConnectEvent(NetworkManager source, ConnectionEventData data)
+    {
+        NetworkManager.Singleton.OnConnectionEvent -= ConnectEvent;
+
+        if (data.EventType == ConnectionEvent.ClientConnected)
+        {
+            SceneTransitionManager.Instance.RegisterDisconnectCallback();
+            return;
+        }
+
+        SetLoading(false);
+        SetError("Failed to connect to server");
+
     }
 
     public void OnClickHost()
     {
+        SetLoading(true);
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(
             "127.0.0.1",
             port,
@@ -98,5 +142,15 @@ public class MainMenuScript : MonoBehaviour
     public void OnClickQuit()
     {
         Application.Quit();
+    }
+
+    void SetError(string error = "")
+    {
+        ErrorText.text = error;
+    }
+
+    void SetLoading(bool isLoading)
+    {
+        Loader.SetActive(isLoading);
     }
 }

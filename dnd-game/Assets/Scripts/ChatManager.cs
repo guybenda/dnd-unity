@@ -22,6 +22,7 @@ public class ChatManager : NetworkBehaviour
 
     const int maxMessageLength = 140;
     const float messageCooldown = 0.5f;
+    const int maxMessages = 200;
     Dictionary<ulong, float> clientIdToMessageCooldown = new();
 
     NonDraggableScrollRect scrollRect;
@@ -109,8 +110,6 @@ public class ChatManager : NetworkBehaviour
     }
 
 
-
-
     [Rpc(SendTo.Server)]
     public void SendChatMessageRpc(string message, RpcParams rpcParams = default)
     {
@@ -152,6 +151,12 @@ public class ChatManager : NetworkBehaviour
     public void PublishChatMessageRpc(string message, RpcParams rpcParams = default)
     {
         InstantiateMessage(message);
+
+        // TODO pool
+        if (MessagesContainer.transform.childCount > maxMessages)
+        {
+            Destroy(MessagesContainer.transform.GetChild(0).gameObject);
+        }
     }
 
     bool CanClientChat(ulong sender)
