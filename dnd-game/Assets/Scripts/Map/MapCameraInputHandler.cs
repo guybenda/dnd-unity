@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class MapCameraDragHandler : MonoBehaviour, IDragHandler
+public class MapCameraInputHandler : MonoBehaviour, IDragHandler
 {
     List<RaycastResult> raycastResults = new();
     PointerEventData pointerData = new(EventSystem.current);
@@ -16,7 +16,7 @@ public class MapCameraDragHandler : MonoBehaviour, IDragHandler
 
         if (raycastResults.Count > 0)
         {
-            if (raycastResults[0].gameObject == this.gameObject)
+            if (raycastResults[0].gameObject == gameObject)
             {
                 HandleMovementKeys();
                 HandleScroll();
@@ -27,6 +27,12 @@ public class MapCameraDragHandler : MonoBehaviour, IDragHandler
 
     public void OnDrag(PointerEventData eventData)
     {
+        if (eventData.button == PointerEventData.InputButton.Left)
+        {
+
+            return;
+        }
+
         MapCameraManager.Instance.OnDrag(eventData);
     }
 

@@ -2,5 +2,6 @@
 public enum TileType
 {
     Empty,
-    Grass
+    Grass,
+    RedBrick,
 }
