@@ -33,14 +33,14 @@ public class User : INetworkSerializable
         await ToDbUser(this).Save();
     }
 
-    public User(UserFirebase dbUser)
+    User(UserFirebase dbUser)
     {
         DisplayName = dbUser.DisplayName;
         Email = dbUser.Email;
         Dice = new(dbUser.Dice);
     }
 
-    public UserFirebase ToDbUser(User user)
+    UserFirebase ToDbUser(User user)
     {
         return new UserFirebase
         {
@@ -52,7 +52,6 @@ public class User : INetworkSerializable
 
     public string ChatColor()
     {
-        // TODO make better
         Color.RGBToHSV(Dice.MainColor, out var h, out var s, out var v);
 
         var amountToDesaturate = Mathf.Min(0.5f, 1 - v);
@@ -71,9 +70,9 @@ public class User : INetworkSerializable
 }
 
 [FirestoreData]
-public class UserFirebase
+class UserFirebase
 {
-    public const string CollectionName = "users";
+    const string CollectionName = "users";
 
     [FirestoreProperty]
     public string DisplayName { get; set; }

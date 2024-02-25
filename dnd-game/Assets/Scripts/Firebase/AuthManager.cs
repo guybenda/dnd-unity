@@ -18,7 +18,7 @@ namespace DndFirebase
 
         FirebaseAuth auth;
 
-        object _userLock = new();
+        readonly object _userLock = new();
 
         void Awake()
         {
