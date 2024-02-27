@@ -34,15 +34,13 @@ public class MapManager : MonoBehaviour
         Map = map;
     }
 
-    public void OnClick(Vector3 clickPosition)
+    public void DrawTile(Vector3 clickPosition, TileType tileType)
     {
-        Vector2Int position = new Vector2Int(
-            (int)Math.Floor(clickPosition.x),
-            (int)Math.Floor(clickPosition.z)
-        );
-        Debug.Log(position);
+        var position = (Vector2Int)MapRenderer.Instance.Tilemap.WorldToCell(clickPosition);
 
-        Map.SetTileAt(position, TileType.CobblestoneA);
-        MapRenderer.Instance.Tilemap.RefreshTile((Vector3Int)position);
+        if (Map.SetTileAt(position, tileType))
+        {
+            MapRenderer.Instance.Tilemap.RefreshTile((Vector3Int)position);
+        }
     }
 }

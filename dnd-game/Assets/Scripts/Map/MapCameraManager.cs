@@ -11,14 +11,14 @@ public class MapCameraManager : MonoBehaviour
     Vector3 targetPosition;
     Quaternion targetRotation;
 
-    const float movementLerpSpeed = 10f;
+    const float movementLerpSpeed = 15f;
     const float rotationLerpSpeed = 20f;
     const float dragMoveSpeed = 10f;
     const float dragRotateSpeed = 250f;
-    const float keyboardMoveSpeed = 10f;
+    const float keyboardMoveSpeed = 12f;
     const float scrollMoveSpeed = 1f;
 
-    const float maxCameraHeight = 50f;
+    const float maxCameraHeight = 70f;
     const float minCameraHeight = 2f;
 
     const float minCameraPitch = 15f;
@@ -36,8 +36,10 @@ public class MapCameraManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        cam.transform.position = Vector3.Lerp(cam.transform.position, targetPosition, 0.01f + movementLerpSpeed * Time.deltaTime);
-        cam.transform.rotation = Quaternion.Lerp(cam.transform.rotation, targetRotation, 0.01f + rotationLerpSpeed * Time.deltaTime);
+        cam.transform.SetPositionAndRotation(
+            Vector3.Lerp(cam.transform.position, targetPosition, 0.01f + movementLerpSpeed * Time.deltaTime),
+            Quaternion.Lerp(cam.transform.rotation, targetRotation, 0.01f + rotationLerpSpeed * Time.deltaTime)
+        );
     }
 
     void Awake()
@@ -57,7 +59,7 @@ public class MapCameraManager : MonoBehaviour
 
     Vector3 MovementVector(float x, float y, float z)
     {
-        float scale = (cam.transform.position.y - minCameraHeight) / 5 + 1;
+        float scale = (cam.transform.position.y - minCameraHeight) / 10 + 1;
         return CamForward() * (z * scale) + CamRight() * (x * scale) + Vector3.up * (y * scale);
     }
 
@@ -78,16 +80,17 @@ public class MapCameraManager : MonoBehaviour
         float x = eventData.delta.x / cam.pixelWidth;
         float y = eventData.delta.y / cam.pixelHeight;
 
-        if (eventData.button == PointerEventData.InputButton.Middle || MapUI.Instance.CurrentMode == Mode.Drag)
-        {
-            targetPosition += MovementVector(x, 0, y) * -dragMoveSpeed;
-        }
-        else if (eventData.button == PointerEventData.InputButton.Right)
+        if (eventData.button == PointerEventData.InputButton.Right)
         {
             var euler = targetRotation.eulerAngles;
             euler.x = math.clamp(euler.x - (y * dragRotateSpeed), minCameraPitch, maxCameraPitch);
             euler.y += x * dragRotateSpeed;
             targetRotation.eulerAngles = euler;
+
+        }
+        else if (eventData.button == PointerEventData.InputButton.Middle || MapUI.Instance.CurrentMode == Mode.Drag)
+        {
+            targetPosition += MovementVector(x, 0, y) * -dragMoveSpeed;
         }
         else
         {
@@ -120,5 +123,11 @@ public class MapCameraManager : MonoBehaviour
     public void OrientCamera()
     {
         targetRotation = Quaternion.LookRotation(Vector3.down, Vector3.up);
+    }
+
+    public void CenterCamera()
+    {
+        targetPosition.x = 0f;
+        targetPosition.z = 0f;
     }
 }

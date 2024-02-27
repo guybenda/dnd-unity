@@ -7,8 +7,7 @@ public class MapRenderer : MonoBehaviour
     public static MapRenderer Instance { get; private set; }
 
 
-    [Range(1, 25)]
-    public int RenderDistanceChunks = 10;
+    const int RenderDistanceChunks = 16;
 
     public Tilemap Tilemap;
 

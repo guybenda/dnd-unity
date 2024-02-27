@@ -35,7 +35,7 @@ public class Map
         {
             for (int j = -10; j < 20; j++)
             {
-                map.SetTileAt(new Vector2Int(i, j), TileType.RockTilesMossyC);
+                map.SetTileAt(new Vector2Int(i, j), TileType.GrassDarkRocky);
             }
         }
 
@@ -130,16 +130,17 @@ public class Map
         return chunk.TileData[localPosition.x][localPosition.y];
     }
 
-    public void SetTileAt(Vector2Int position, TileType tile)
+    public bool SetTileAt(Vector2Int position, TileType tile)
     {
         var chunk = Chunks.GetCreate(position);
 
         var x = Mod(position.x);
         var y = Mod(position.y);
 
+        var prev = chunk.TileData[x][y];
         chunk.TileData[x][y] = tile;
 
-        Debug.Log($"Set tile at {position}, chunkpos {x},{y}");
+        return prev != tile;
     }
 
     public bool GetVisionAt(Vector2Int position)

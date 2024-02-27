@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -11,7 +12,12 @@ public class MapUI : MonoBehaviour
 
     public GameObject ModeButtonsContainer;
     public GameObject ModeButtonPrefab;
+    public TMP_Text StatusText;
 
+    const float maxRaycastDistance = 160f;
+
+    List<RaycastResult> raycastResults = new();
+    PointerEventData pointerData = new(EventSystem.current);
 
     Mode _currentMode;
     public Mode CurrentMode
@@ -21,53 +27,30 @@ public class MapUI : MonoBehaviour
         {
             _currentMode = value;
 
-            foreach (var modeButton in modeButtons)
+            foreach (var modeButton in ModeButton.Buttons)
             {
                 if (modeButton.Mode == value)
                 {
-                    modeButton.Button.colors = selectedColor;
+                    modeButton.Button.colors = ModeButton.SelectedColor;
                 }
                 else
                 {
-                    modeButton.Button.colors = normalColors;
+                    modeButton.Button.colors = ModeButton.NormalColors;
                 }
             }
         }
     }
 
-    readonly List<ModeButton> modeButtons = new()
+    TileType _currentTileType = TileType.RectangularTilesA;
+    public TileType CurrentTileType
     {
-        new() {
-            Mode = Mode.Drag,
-            IconName = "hand",
-        },
-        new() {
-            Mode = Mode.Draw,
-            IconName = "brush-01",
+        get => _currentTileType;
+        set
+        {
+            _currentTileType = value;
+
         }
-    };
-
-    readonly ColorBlock normalColors = new()
-    {
-        normalColor = new(0.7f, 0.7f, 0.7f, 0.5f),
-        highlightedColor = new(1f, 1f, 1f, 0.8f),
-        pressedColor = new Color32(200, 200, 200, byte.MaxValue),
-        selectedColor = new Color32(245, 245, 245, byte.MaxValue),
-        disabledColor = new Color32(200, 200, 200, 128),
-        colorMultiplier = 1f,
-        fadeDuration = 0.1f
-    };
-
-    readonly ColorBlock selectedColor = new()
-    {
-        normalColor = new(1, 1, 1, 1),
-        highlightedColor = new(1f, 1f, 1f, 0.8f),
-        pressedColor = new Color32(200, 200, 200, byte.MaxValue),
-        selectedColor = new Color32(245, 245, 245, byte.MaxValue),
-        disabledColor = new Color32(200, 200, 200, 128),
-        colorMultiplier = 1f,
-        fadeDuration = 0.1f
-    };
+    }
 
     Camera cam;
 
@@ -78,7 +61,7 @@ public class MapUI : MonoBehaviour
 
     void Update()
     {
-
+        HandleStatusText();
     }
 
     void Awake()
@@ -91,13 +74,15 @@ public class MapUI : MonoBehaviour
 
         Instance = this;
 
-        foreach (var modeButton in modeButtons)
+        foreach (var modeButton in ModeButton.Buttons)
         {
             var button = Instantiate(ModeButtonPrefab, ModeButtonsContainer.transform);
             button.transform.GetChild(0).GetComponent<Image>().sprite = Resources.Load<Sprite>($"Icons/{modeButton.IconName}");
 
             var buttonComp = button.GetComponent<Button>();
-            buttonComp.colors = normalColors;
+            buttonComp.colors = ModeButton.NormalColors;
+            buttonComp.name = modeButton.Mode.ToString();
+
             var mode = modeButton.Mode;
             buttonComp.onClick.AddListener(() => OnClickMode(mode));
 
@@ -105,6 +90,38 @@ public class MapUI : MonoBehaviour
         }
 
         cam = Camera.main;
+    }
+
+    void HandleStatusText()
+    {
+        var mousePos = Input.mousePosition;
+        pointerData.position = mousePos;
+        EventSystem.current.RaycastAll(pointerData, raycastResults);
+
+        if (raycastResults.Count > 0)
+        {
+            var target = raycastResults[0];
+
+            if (target.gameObject.TryGetComponent<Button>(out var button))
+            {
+                StatusText.text = button.name;
+                return;
+            }
+        }
+
+        var ray = cam.ScreenPointToRay(mousePos);
+
+        if (Physics.Raycast(ray, out var hit, maxRaycastDistance))
+        {
+            if (hit.collider.gameObject == MapRenderer.Instance.gameObject)
+            {
+                var position = MapRenderer.Instance.Tilemap.WorldToCell(hit.point);
+                StatusText.text = $"{position.x}, {position.y}";
+                return;
+            }
+        }
+
+        StatusText.text = "";
     }
 
     public void OnClickMode(Mode mode)
@@ -121,11 +138,11 @@ public class MapUI : MonoBehaviour
     {
         var ray = cam.ScreenPointToRay(eventData.position);
 
-        if (Physics.Raycast(ray, out var hit, 100f))
+        if (Physics.Raycast(ray, out var hit, maxRaycastDistance))
         {
             if (hit.collider.gameObject == MapRenderer.Instance.gameObject)
             {
-                MapManager.Instance.OnClick(hit.point);
+                MapManager.Instance.DrawTile(hit.point, CurrentTileType);
             }
         }
     }
@@ -134,7 +151,18 @@ public class MapUI : MonoBehaviour
     {
         MapCameraManager.Instance.OrientCamera();
     }
+
+    public void OnClickCenter()
+    {
+        MapCameraManager.Instance.CenterCamera();
+    }
+
+    public void OnClickSave()
+    {
+        Debug.Log("Save");
+    }
 }
+
 
 
 
@@ -149,4 +177,40 @@ class ModeButton
     public Mode Mode;
     public string IconName;
     public Button Button;
+
+
+    public static readonly List<ModeButton> Buttons = new()
+    {
+        new() {
+            Mode = Mode.Drag,
+            IconName = "hand",
+        },
+        new() {
+            Mode = Mode.Draw,
+            IconName = "brush-01",
+        }
+    };
+
+
+    public static readonly ColorBlock NormalColors = new()
+    {
+        normalColor = new(0.7f, 0.7f, 0.7f, 0.5f),
+        highlightedColor = new(1f, 1f, 1f, 0.8f),
+        pressedColor = new Color32(200, 200, 200, byte.MaxValue),
+        selectedColor = new Color32(245, 245, 245, byte.MaxValue),
+        disabledColor = new Color32(200, 200, 200, 128),
+        colorMultiplier = 1f,
+        fadeDuration = 0.1f
+    };
+
+    public static readonly ColorBlock SelectedColor = new()
+    {
+        normalColor = new(1, 1, 1, 1),
+        highlightedColor = new(1f, 1f, 1f, 0.8f),
+        pressedColor = new Color32(200, 200, 200, byte.MaxValue),
+        selectedColor = new Color32(245, 245, 245, byte.MaxValue),
+        disabledColor = new Color32(200, 200, 200, 128),
+        colorMultiplier = 1f,
+        fadeDuration = 0.1f
+    };
 }
