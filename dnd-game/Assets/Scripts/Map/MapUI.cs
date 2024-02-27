@@ -2,23 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class MapUI : MonoBehaviour
 {
-    public enum Mode
-    {
-        Drag,
-        Draw
-    }
-
-    class ModeButton
-    {
-        public Mode Mode;
-        public string IconName;
-        public Button Button;
-    }
-
     public static MapUI Instance { get; private set; }
 
     public GameObject ModeButtonsContainer;
@@ -81,6 +69,8 @@ public class MapUI : MonoBehaviour
         fadeDuration = 0.1f
     };
 
+    Camera cam;
+
     void Start()
     {
         CurrentMode = Mode.Drag;
@@ -113,10 +103,53 @@ public class MapUI : MonoBehaviour
 
             modeButton.Button = buttonComp;
         }
+
+        cam = Camera.main;
     }
 
     public void OnClickMode(Mode mode)
     {
         CurrentMode = mode;
     }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        var ray = cam.ScreenPointToRay(eventData.position);
+
+        if (Physics.Raycast(ray, out var hit, 30f))
+        {
+            if (hit.collider.gameObject == MapRenderer.Instance.gameObject)
+            {
+                MapManager.Instance.OnClick(hit.point);
+            }
+        }
+    }
+
+    public void OnClick(PointerEventData eventData)
+    {
+        var ray = cam.ScreenPointToRay(eventData.position);
+
+        if (Physics.Raycast(ray, out var hit, 30f))
+        {
+            if (hit.collider.gameObject == MapRenderer.Instance.gameObject)
+            {
+                MapManager.Instance.OnClick(hit.point);
+            }
+        }
+    }
+}
+
+
+
+public enum Mode
+{
+    Drag,
+    Draw
+}
+
+class ModeButton
+{
+    public Mode Mode;
+    public string IconName;
+    public Button Button;
 }

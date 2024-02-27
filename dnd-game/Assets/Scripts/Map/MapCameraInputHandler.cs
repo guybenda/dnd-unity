@@ -3,10 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class MapCameraInputHandler : MonoBehaviour, IDragHandler
+public class MapCameraInputHandler : MonoBehaviour, IDragHandler, IPointerDownHandler
 {
     List<RaycastResult> raycastResults = new();
     PointerEventData pointerData = new(EventSystem.current);
+    Camera cam;
+
+    void Awake()
+    {
+        cam = Camera.main;
+    }
 
     void Update()
     {
@@ -24,15 +30,8 @@ public class MapCameraInputHandler : MonoBehaviour, IDragHandler
         }
     }
 
-
     public void OnDrag(PointerEventData eventData)
     {
-        if (eventData.button == PointerEventData.InputButton.Left)
-        {
-
-            return;
-        }
-
         MapCameraManager.Instance.OnDrag(eventData);
     }
 
@@ -53,5 +52,13 @@ public class MapCameraInputHandler : MonoBehaviour, IDragHandler
         if (scroll == 0f) return;
 
         MapCameraManager.Instance.OnScroll(scroll);
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        if (eventData.button == PointerEventData.InputButton.Left)
+        {
+            MapCameraManager.Instance.OnClick(eventData);
+        }
     }
 }

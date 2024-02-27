@@ -19,7 +19,7 @@ public class Map
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 
-    public Chunker<MapChunk> Chunks { get; set; }
+    public Chunker<MapChunk> Chunks { get; set; } = new();
 
     public Map(string gameId)
     {
@@ -111,7 +111,7 @@ public class Map
             return TileType.Empty;
         }
 
-        var localPosition = new Vector2Int(position.x % MapChunk.ChunkSize, position.y % MapChunk.ChunkSize);
+        var localPosition = new Vector2Int(Mod(position.x), Mod(position.y));
         return chunk.TileData[localPosition.x][localPosition.y];
     }
 
@@ -119,7 +119,7 @@ public class Map
     {
         var chunk = Chunks.GetCreate(position);
 
-        chunk.TileData[position.x % MapChunk.ChunkSize][position.y % MapChunk.ChunkSize] = tile;
+        chunk.TileData[Mod(position.x)][Mod(position.y)] = tile;
     }
 
     public bool GetVisionAt(Vector2Int position)
@@ -130,7 +130,7 @@ public class Map
             return false;
         }
 
-        var localPosition = new Vector2Int(position.x % MapChunk.ChunkSize, position.y % MapChunk.ChunkSize);
+        var localPosition = new Vector2Int(Mod(position.x), Mod(position.y));
         return chunk.VisionData[localPosition.x][localPosition.y];
     }
 
@@ -138,7 +138,12 @@ public class Map
     {
         var chunk = Chunks.GetCreate(position);
 
-        chunk.VisionData[position.x % MapChunk.ChunkSize][position.y % MapChunk.ChunkSize] = visible;
+        chunk.VisionData[Mod(position.x)][Mod(position.y)] = visible;
+    }
+
+    int Mod(int n)
+    {
+        return (n % MapChunk.ChunkSize + MapChunk.ChunkSize) % MapChunk.ChunkSize;
     }
 }
 

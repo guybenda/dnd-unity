@@ -5,14 +5,14 @@ using UnityEngine.Tilemaps;
 public class MapRenderer : MonoBehaviour
 {
     public static MapRenderer Instance { get; private set; }
-    SyncExecutor exec = new();
 
-    public Map Map;
 
     [Range(1, 25)]
     public int RenderDistanceChunks = 5;
 
-    Tilemap tilemap;
+    SyncExecutor exec = new();
+    public Tilemap Tilemap;
+    CustomTile customTileInstance;
 
     void Awake()
     {
@@ -24,7 +24,8 @@ public class MapRenderer : MonoBehaviour
 
         Instance = this;
 
-        tilemap = GetComponentInChildren<Tilemap>();
+        Tilemap = GetComponentInChildren<Tilemap>();
+        customTileInstance = ScriptableObject.CreateInstance<CustomTile>();
     }
 
     void Start()
@@ -34,7 +35,7 @@ public class MapRenderer : MonoBehaviour
 
     void Update()
     {
-        if (Map != null)
+        if (MapManager.Instance.Map != null)
         {
             RenderMap();
         }
@@ -44,27 +45,48 @@ public class MapRenderer : MonoBehaviour
 
     void RenderMap()
     {
-        var cameraPos = ((Vector2)Camera.main.transform.position) / MapChunk.ChunkSizeF;
+        var cameraChunkPos = ((Vector2)Camera.main.transform.position) / MapChunk.ChunkSizeF;
 
-        foreach (var chunkPos in Map.Chunks.Keys)
+        foreach (var (chunkPos, chunk) in MapManager.Instance.Map.Chunks)
         {
-            var distance = Vector2.Distance(cameraPos, chunkPos);
+            var distance = Vector2.Distance(cameraChunkPos, chunkPos);
             if (distance > RenderDistanceChunks)
             {
+                if (chunk.IsRendered)
+                {
+                    UnloadChunk(chunkPos);
+                    chunk.IsRendered = false;
+                }
+
                 continue;
             }
 
+            if (!chunk.IsRendered)
+            {
+                LoadChunk(chunkPos);
+                chunk.IsRendered = true;
+            }
 
         }
     }
 
     void LoadChunk(Vector2Int chunkPos)
     {
-        if (!Map.Chunks.TryGetValue(chunkPos, out var chunk))
-        {
-            return;
-        }
+        var fromX = chunkPos.x * MapChunk.ChunkSize;
+        var toX = fromX + MapChunk.ChunkSize;
+        var fromY = chunkPos.y * MapChunk.ChunkSize;
+        var toY = fromY + MapChunk.ChunkSize;
 
-        // tilemap.BoxFill
+        Tilemap.BoxFill(new Vector3Int(fromX, fromY, 0), customTileInstance, fromX, fromY, toX, toY);
+    }
+
+    void UnloadChunk(Vector2Int chunkPos)
+    {
+        var fromX = chunkPos.x * MapChunk.ChunkSize;
+        var toX = fromX + MapChunk.ChunkSize;
+        var fromY = chunkPos.y * MapChunk.ChunkSize;
+        var toY = fromY + MapChunk.ChunkSize;
+
+        Tilemap.BoxFill(new Vector3Int(fromX, fromY, 0), null, fromX, fromY, toX, toY);
     }
 }

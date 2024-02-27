@@ -82,13 +82,27 @@ public class MapCameraManager : MonoBehaviour
         {
             targetPosition += MovementVector(x, y) * -dragMoveSpeed;
         }
-        else if (eventData.button == PointerEventData.InputButton.Right)
+        else if (eventData.button == PointerEventData.InputButton.Right || MapUI.Instance.CurrentMode == Mode.Drag)
         {
             var euler = targetRotation.eulerAngles;
             euler.x = math.clamp(euler.x - (y * dragRotateSpeed), minCameraPitch, maxCameraPitch);
             euler.y += x * dragRotateSpeed;
             targetRotation.eulerAngles = euler;
         }
+        else
+        {
+            MapUI.Instance.OnDrag(eventData);
+        }
+    }
+
+    public void OnClick(PointerEventData eventData)
+    {
+        if (MapUI.Instance.CurrentMode == Mode.Drag)
+        {
+            return;
+        }
+
+        MapUI.Instance.OnClick(eventData);
     }
 
     public void OnMove(Vector3 movement)

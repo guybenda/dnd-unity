@@ -7,7 +7,7 @@ public class TileManager : MonoBehaviour
 {
     public static TileManager Instance { get; private set; }
 
-    Tilemap tilemap;
+    public Dictionary<TileType, Sprite[]> TileSprites = new();
 
 
     void Start()
@@ -29,5 +29,7 @@ public class TileManager : MonoBehaviour
         }
 
         Instance = this;
+
+        // TileType.Unknown.
     }
 }
