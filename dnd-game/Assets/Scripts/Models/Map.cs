@@ -5,9 +5,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using DndFirebase;
 using Firebase.Firestore;
-using Palmmedia.ReportGenerator.Core.Reporting.Builders.Rendering;
+using Unity.Mathematics;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public class Map
 {
@@ -18,7 +19,7 @@ public class Map
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 
-    public Dictionary<Vector2Int, MapChunk> Chunks { get; set; }
+    public Chunker<MapChunk> Chunks { get; set; }
 
     public Map(string gameId)
     {
@@ -78,13 +79,13 @@ public class Map
 
         foreach (var (position, chunk) in Chunks)
         {
-            uint[] tileData = new uint[MapChunk.ChunkSize * MapChunk.ChunkSize];
+            int[] tileData = new int[MapChunk.ChunkSize * MapChunk.ChunkSize];
             bool[] visionData = new bool[MapChunk.ChunkSize * MapChunk.ChunkSize];
             for (int x = 0; x < MapChunk.ChunkSize; x++)
             {
                 for (int y = 0; y < MapChunk.ChunkSize; y++)
                 {
-                    tileData[x * MapChunk.ChunkSize + y] = (uint)chunk.TileData[x][y];
+                    tileData[x * MapChunk.ChunkSize + y] = (int)chunk.TileData[x][y];
                     visionData[x * MapChunk.ChunkSize + y] = chunk.VisionData[x][y];
                 }
             }
@@ -100,7 +101,44 @@ public class Map
 
         await Save();
         await MapFirebase.SaveData(Id, convertedData);
+    }
 
+    public TileType GetTileAt(Vector2Int position)
+    {
+        var chunk = Chunks.Get(position);
+        if (chunk == null)
+        {
+            return TileType.Empty;
+        }
+
+        var localPosition = new Vector2Int(position.x % MapChunk.ChunkSize, position.y % MapChunk.ChunkSize);
+        return chunk.TileData[localPosition.x][localPosition.y];
+    }
+
+    public void SetTileAt(Vector2Int position, TileType tile)
+    {
+        var chunk = Chunks.GetCreate(position);
+
+        chunk.TileData[position.x % MapChunk.ChunkSize][position.y % MapChunk.ChunkSize] = tile;
+    }
+
+    public bool GetVisionAt(Vector2Int position)
+    {
+        var chunk = Chunks.Get(position);
+        if (chunk == null)
+        {
+            return false;
+        }
+
+        var localPosition = new Vector2Int(position.x % MapChunk.ChunkSize, position.y % MapChunk.ChunkSize);
+        return chunk.VisionData[localPosition.x][localPosition.y];
+    }
+
+    public void SetVisionAt(Vector2Int position, bool visible)
+    {
+        var chunk = Chunks.GetCreate(position);
+
+        chunk.VisionData[position.x % MapChunk.ChunkSize][position.y % MapChunk.ChunkSize] = visible;
     }
 }
 
@@ -128,7 +166,6 @@ class MapFirebase
     [FirestoreProperty]
     public Timestamp UpdatedAt { get; set; }
 
-    public
 
     static CollectionReference Col()
     {
@@ -212,10 +249,13 @@ class MapFirebase
 public class MapChunk
 {
     public const int ChunkSize = 16;
+    public const float ChunkSizeF = ChunkSize;
 
     public TileType[][] TileData { get; set; }
 
     public bool[][] VisionData { get; set; }
+
+    public bool IsRendered = false;
 
     void Init()
     {
@@ -253,9 +293,48 @@ public class MapChunk
 public class MapChunkFirebase
 {
     [FirestoreProperty]
-    public uint[] TileData { get; set; }
+    public int[] TileData { get; set; }
 
     [FirestoreProperty]
     public bool[] VisionData { get; set; }
 
+}
+
+public class Chunker<TData> : Dictionary<Vector2Int, TData> where TData : new()
+{
+    public const int ChunkSize = 16;
+    public const float ChunkSizeF = ChunkSize;
+
+    Vector2Int GetChunkPosition(Vector2Int position)
+    {
+        return new Vector2Int(
+            (int)Math.Floor(position.x / MapChunk.ChunkSizeF),
+            (int)Math.Floor(position.y / MapChunk.ChunkSizeF)
+        );
+    }
+
+    public TData Get(Vector2Int position)
+    {
+        var chunkPosition = GetChunkPosition(position);
+
+        if (!TryGetValue(chunkPosition, out var chunk))
+        {
+            return default;
+        }
+
+        return chunk;
+    }
+
+    public TData GetCreate(Vector2Int position)
+    {
+        var chunkPosition = GetChunkPosition(position);
+
+        if (!TryGetValue(chunkPosition, out var chunk))
+        {
+            chunk = new TData();
+            Add(chunkPosition, chunk);
+        }
+
+        return chunk;
+    }
 }

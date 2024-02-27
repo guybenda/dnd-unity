@@ -5,3 +5,11 @@ public enum TileType : int
     Empty = 0,
     RedBricks = 1,
 }
+
+public static class TileTypeExtensions
+{
+    public static string Test()
+    {
+        return "123";
+    }
+}
