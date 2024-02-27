@@ -76,7 +76,6 @@ public static class TileTypeExtensions
             case TileType.SquareTilesD:
             case TileType.SquareTilesE:
             case TileType.SquareTilesF:
-            case TileType.CobblestoneA:
                 return TileTextureType.Random;
         }
 

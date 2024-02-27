@@ -38,10 +38,19 @@ public class MapUI : MonoBehaviour
                     modeButton.Button.colors = ModeButton.NormalColors;
                 }
             }
+
+            var tilesSelector = GetComponentInChildren<MapTileSelectorScript>(true);
+            tilesSelector.gameObject.SetActive(value == Mode.Draw);
+            tilesSelector.Expanded = value == Mode.Draw;
+
+            if (value == Mode.Erase)
+            {
+                CurrentTileType = TileType.Empty;
+            }
         }
     }
 
-    TileType _currentTileType = TileType.RectangularTilesA;
+    TileType _currentTileType = TileType.CobblestoneA;
     public TileType CurrentTileType
     {
         get => _currentTileType;
@@ -169,7 +178,8 @@ public class MapUI : MonoBehaviour
 public enum Mode
 {
     Drag,
-    Draw
+    Draw,
+    Erase,
 }
 
 class ModeButton
@@ -188,6 +198,10 @@ class ModeButton
         new() {
             Mode = Mode.Draw,
             IconName = "brush-01",
+        },
+        new() {
+            Mode = Mode.Erase,
+            IconName = "eraser",
         }
     };
 
