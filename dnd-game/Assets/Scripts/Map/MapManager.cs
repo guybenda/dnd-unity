@@ -21,7 +21,7 @@ public class MapManager : MonoBehaviour
 
     void Start()
     {
-        Map = new Map("test_game_id");
+        Map = Map.NewDefaultMap("test_game_id");
     }
 
     void Update()

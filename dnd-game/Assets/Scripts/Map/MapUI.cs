@@ -114,9 +114,14 @@ public class MapUI : MonoBehaviour
 
     public void OnDrag(PointerEventData eventData)
     {
+        OnClick(eventData);
+    }
+
+    public void OnClick(PointerEventData eventData)
+    {
         var ray = cam.ScreenPointToRay(eventData.position);
 
-        if (Physics.Raycast(ray, out var hit, 30f))
+        if (Physics.Raycast(ray, out var hit, 100f))
         {
             if (hit.collider.gameObject == MapRenderer.Instance.gameObject)
             {
@@ -125,17 +130,9 @@ public class MapUI : MonoBehaviour
         }
     }
 
-    public void OnClick(PointerEventData eventData)
+    public void OnClickOrient()
     {
-        var ray = cam.ScreenPointToRay(eventData.position);
-
-        if (Physics.Raycast(ray, out var hit, 30f))
-        {
-            if (hit.collider.gameObject == MapRenderer.Instance.gameObject)
-            {
-                MapManager.Instance.OnClick(hit.point);
-            }
-        }
+        MapCameraManager.Instance.OrientCamera();
     }
 }
 

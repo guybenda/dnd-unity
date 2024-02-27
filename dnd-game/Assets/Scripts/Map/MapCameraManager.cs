@@ -16,9 +16,9 @@ public class MapCameraManager : MonoBehaviour
     const float dragMoveSpeed = 10f;
     const float dragRotateSpeed = 250f;
     const float keyboardMoveSpeed = 10f;
-    const float scrollMoveSpeed = 0.5f;
+    const float scrollMoveSpeed = 1f;
 
-    const float maxCameraHeight = 15f;
+    const float maxCameraHeight = 50f;
     const float minCameraHeight = 2f;
 
     const float minCameraPitch = 15f;
@@ -55,10 +55,10 @@ public class MapCameraManager : MonoBehaviour
         targetRotation = cam.transform.rotation;
     }
 
-    Vector3 MovementVector(float x, float z)
+    Vector3 MovementVector(float x, float y, float z)
     {
         float scale = (cam.transform.position.y - minCameraHeight) / 5 + 1;
-        return CamForward() * (z * scale) + CamRight() * (x * scale);
+        return CamForward() * (z * scale) + CamRight() * (x * scale) + Vector3.up * (y * scale);
     }
 
     Vector3 CamForward()
@@ -78,11 +78,11 @@ public class MapCameraManager : MonoBehaviour
         float x = eventData.delta.x / cam.pixelWidth;
         float y = eventData.delta.y / cam.pixelHeight;
 
-        if (eventData.button == PointerEventData.InputButton.Middle)
+        if (eventData.button == PointerEventData.InputButton.Middle || MapUI.Instance.CurrentMode == Mode.Drag)
         {
-            targetPosition += MovementVector(x, y) * -dragMoveSpeed;
+            targetPosition += MovementVector(x, 0, y) * -dragMoveSpeed;
         }
-        else if (eventData.button == PointerEventData.InputButton.Right || MapUI.Instance.CurrentMode == Mode.Drag)
+        else if (eventData.button == PointerEventData.InputButton.Right)
         {
             var euler = targetRotation.eulerAngles;
             euler.x = math.clamp(euler.x - (y * dragRotateSpeed), minCameraPitch, maxCameraPitch);
@@ -107,11 +107,18 @@ public class MapCameraManager : MonoBehaviour
 
     public void OnMove(Vector3 movement)
     {
-        targetPosition += MovementVector(movement.x, movement.z) * keyboardMoveSpeed * Time.deltaTime;
+        Vector3 newPosition = targetPosition + keyboardMoveSpeed * Time.deltaTime * MovementVector(movement.x, movement.y, movement.z);
+        newPosition.y = math.clamp(newPosition.y, minCameraHeight, maxCameraHeight);
+        targetPosition = newPosition;
     }
 
     public void OnScroll(float scroll)
     {
         targetPosition.y = math.clamp(targetPosition.y - (scroll * scrollMoveSpeed), minCameraHeight, maxCameraHeight);
+    }
+
+    public void OrientCamera()
+    {
+        targetRotation = Quaternion.LookRotation(Vector3.down, Vector3.up);
     }
 }

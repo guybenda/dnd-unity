@@ -76,6 +76,7 @@ public static class TileTypeExtensions
             case TileType.SquareTilesD:
             case TileType.SquareTilesE:
             case TileType.SquareTilesF:
+            case TileType.CobblestoneA:
                 return TileTextureType.Random;
         }
 
@@ -111,15 +112,16 @@ public static class TileTypeExtensions
                     var dim = (int)Math.Sqrt(sprites.Length);
                     var xIndex = Mod(position.x, dim);
                     var yIndex = position.y * dim;
-                    var index = Mod(xIndex + yIndex, sprites.Length);
+                    var index = Mod(xIndex - yIndex, sprites.Length);
                     return sprites[index];
                 }
             case TileTextureType.Random:
                 {
                     const float randomMult = Mathf.PI;
                     var offset = (int)tileType * 13.37f;
-                    var indexF = Mathf.PerlinNoise(position.x * randomMult + offset, position.y * randomMult + offset) * sprites.Length;
-                    var index = (int)Mathf.Clamp(indexF, 0, sprites.Length - 1);
+                    var indexF = Mathf.PerlinNoise(position.x * randomMult + offset, position.y * randomMult + offset) * 137.51f;
+                    var index = Mod((int)indexF, sprites.Length);
+                    // var index = (int)Mathf.Clamp(indexF, 0, sprites.Length - 1);
                     return sprites[index];
                 }
         }

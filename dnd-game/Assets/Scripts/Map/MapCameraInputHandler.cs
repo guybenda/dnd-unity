@@ -37,7 +37,7 @@ public class MapCameraInputHandler : MonoBehaviour, IDragHandler, IPointerDownHa
 
     void HandleMovementKeys()
     {
-        Vector3 moveVector = new(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+        Vector3 moveVector = new(Input.GetAxis("Horizontal"), Input.GetAxis("Lateral"), Input.GetAxis("Vertical"));
 
         if (moveVector == Vector3.zero) return;
 

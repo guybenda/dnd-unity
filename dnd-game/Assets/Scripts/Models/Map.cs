@@ -27,6 +27,21 @@ public class Map
         GameId = gameId;
     }
 
+    public static Map NewDefaultMap(string gameId)
+    {
+        var map = new Map(gameId);
+
+        for (int i = -10; i < 20; i++)
+        {
+            for (int j = -10; j < 20; j++)
+            {
+                map.SetTileAt(new Vector2Int(i, j), TileType.RockTilesMossyC);
+            }
+        }
+
+        return map;
+    }
+
     Map(MapFirebase dbMap)
     {
         Id = dbMap.Id;
@@ -119,7 +134,12 @@ public class Map
     {
         var chunk = Chunks.GetCreate(position);
 
-        chunk.TileData[Mod(position.x)][Mod(position.y)] = tile;
+        var x = Mod(position.x);
+        var y = Mod(position.y);
+
+        chunk.TileData[x][y] = tile;
+
+        Debug.Log($"Set tile at {position}, chunkpos {x},{y}");
     }
 
     public bool GetVisionAt(Vector2Int position)
@@ -248,98 +268,5 @@ class MapFirebase
         }
 
         await batch.CommitAsync();
-    }
-}
-
-public class MapChunk
-{
-    public const int ChunkSize = 16;
-    public const float ChunkSizeF = ChunkSize;
-
-    public TileType[][] TileData { get; set; }
-
-    public bool[][] VisionData { get; set; }
-
-    public bool IsRendered = false;
-
-    void Init()
-    {
-        TileData = new TileType[ChunkSize][];
-        VisionData = new bool[ChunkSize][];
-
-        for (int i = 0; i < ChunkSize; i++)
-        {
-            TileData[i] = new TileType[ChunkSize];
-            VisionData[i] = new bool[ChunkSize];
-        }
-    }
-
-    public MapChunk()
-    {
-        Init();
-    }
-
-    public MapChunk(MapChunkFirebase dbChunk)
-    {
-        Init();
-
-        for (int x = 0; x < ChunkSize; x++)
-        {
-            for (int y = 0; y < ChunkSize; y++)
-            {
-                TileData[x][y] = (TileType)dbChunk.TileData[x * ChunkSize + y];
-                VisionData[x][y] = dbChunk.VisionData[x * ChunkSize + y];
-            }
-        }
-    }
-}
-
-[FirestoreData]
-public class MapChunkFirebase
-{
-    [FirestoreProperty]
-    public int[] TileData { get; set; }
-
-    [FirestoreProperty]
-    public bool[] VisionData { get; set; }
-
-}
-
-public class Chunker<TData> : Dictionary<Vector2Int, TData> where TData : new()
-{
-    public const int ChunkSize = 16;
-    public const float ChunkSizeF = ChunkSize;
-
-    Vector2Int GetChunkPosition(Vector2Int position)
-    {
-        return new Vector2Int(
-            (int)Math.Floor(position.x / MapChunk.ChunkSizeF),
-            (int)Math.Floor(position.y / MapChunk.ChunkSizeF)
-        );
-    }
-
-    public TData Get(Vector2Int position)
-    {
-        var chunkPosition = GetChunkPosition(position);
-
-        if (!TryGetValue(chunkPosition, out var chunk))
-        {
-            return default;
-        }
-
-        return chunk;
-    }
-
-    public TData GetCreate(Vector2Int position)
-    {
-        var chunkPosition = GetChunkPosition(position);
-
-        if (!TryGetValue(chunkPosition, out var chunk))
-        {
-            chunk = new TData();
-            Add(chunkPosition, chunk);
-        }
-
-        return chunk;
     }
 }

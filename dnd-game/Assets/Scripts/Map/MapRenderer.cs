@@ -8,11 +8,15 @@ public class MapRenderer : MonoBehaviour
 
 
     [Range(1, 25)]
-    public int RenderDistanceChunks = 5;
+    public int RenderDistanceChunks = 10;
+
+    public Tilemap Tilemap;
 
     SyncExecutor exec = new();
-    public Tilemap Tilemap;
     CustomTile customTileInstance;
+    TileBase[] fillTileArray;
+    TileBase[] emptyTileArray;
+
 
     void Awake()
     {
@@ -26,6 +30,13 @@ public class MapRenderer : MonoBehaviour
 
         Tilemap = GetComponentInChildren<Tilemap>();
         customTileInstance = ScriptableObject.CreateInstance<CustomTile>();
+
+        fillTileArray = new TileBase[MapChunk.ChunkSize * MapChunk.ChunkSize];
+        emptyTileArray = new TileBase[MapChunk.ChunkSize * MapChunk.ChunkSize];
+        for (int i = 0; i < fillTileArray.Length; i++)
+        {
+            fillTileArray[i] = customTileInstance;
+        }
     }
 
     void Start()
@@ -45,7 +56,8 @@ public class MapRenderer : MonoBehaviour
 
     void RenderMap()
     {
-        var cameraChunkPos = ((Vector2)Camera.main.transform.position) / MapChunk.ChunkSizeF;
+        var camPos = Camera.main.transform.position;
+        var cameraChunkPos = new Vector2(camPos.x / MapChunk.ChunkSizeF, camPos.z / MapChunk.ChunkSizeF);
 
         foreach (var (chunkPos, chunk) in MapManager.Instance.Map.Chunks)
         {
@@ -73,20 +85,21 @@ public class MapRenderer : MonoBehaviour
     void LoadChunk(Vector2Int chunkPos)
     {
         var fromX = chunkPos.x * MapChunk.ChunkSize;
-        var toX = fromX + MapChunk.ChunkSize;
         var fromY = chunkPos.y * MapChunk.ChunkSize;
-        var toY = fromY + MapChunk.ChunkSize;
 
-        Tilemap.BoxFill(new Vector3Int(fromX, fromY, 0), customTileInstance, fromX, fromY, toX, toY);
+        var bounds = new BoundsInt(new Vector3Int(fromX, fromY, 0), new Vector3Int(MapChunk.ChunkSize, MapChunk.ChunkSize, 1));
+
+        Tilemap.SetTilesBlock(bounds, fillTileArray);
+        // Tilemap.BoxFill(new Vector3Int(fromX, fromY, 0), customTileInstance, fromX, fromY, toX, toY);
     }
 
     void UnloadChunk(Vector2Int chunkPos)
     {
         var fromX = chunkPos.x * MapChunk.ChunkSize;
-        var toX = fromX + MapChunk.ChunkSize;
         var fromY = chunkPos.y * MapChunk.ChunkSize;
-        var toY = fromY + MapChunk.ChunkSize;
 
-        Tilemap.BoxFill(new Vector3Int(fromX, fromY, 0), null, fromX, fromY, toX, toY);
+        var bounds = new BoundsInt(new Vector3Int(fromX, fromY, 0), new Vector3Int(MapChunk.ChunkSize, MapChunk.ChunkSize, 1));
+
+        Tilemap.SetTilesBlock(bounds, emptyTileArray);
     }
 }
