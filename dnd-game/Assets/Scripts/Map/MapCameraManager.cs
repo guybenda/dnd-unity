@@ -13,10 +13,10 @@ public class MapCameraManager : MonoBehaviour
 
     const float movementLerpSpeed = 15f;
     const float rotationLerpSpeed = 20f;
-    const float dragMoveSpeed = 10f;
+    const float dragMoveSpeed = 12f;
     const float dragRotateSpeed = 250f;
     const float keyboardMoveSpeed = 12f;
-    const float scrollMoveSpeed = 1f;
+    const float scrollMoveSpeed = 1.5f;
 
     const float maxCameraHeight = 70f;
     const float minCameraHeight = 2f;
@@ -37,7 +37,7 @@ public class MapCameraManager : MonoBehaviour
     void Update()
     {
         cam.transform.SetPositionAndRotation(
-            Vector3.Lerp(cam.transform.position, targetPosition, 0.01f + movementLerpSpeed * Time.deltaTime),
+            Vector3.Lerp(cam.transform.position, targetPosition, movementLerpSpeed * Time.deltaTime),
             Quaternion.Lerp(cam.transform.rotation, targetRotation, 0.01f + rotationLerpSpeed * Time.deltaTime)
         );
     }
@@ -78,7 +78,7 @@ public class MapCameraManager : MonoBehaviour
     public void OnDrag(PointerEventData eventData)
     {
         float x = eventData.delta.x / cam.pixelWidth;
-        float y = eventData.delta.y / cam.pixelHeight;
+        float y = eventData.delta.y / cam.pixelWidth;
 
         if (eventData.button == PointerEventData.InputButton.Right)
         {
@@ -88,7 +88,7 @@ public class MapCameraManager : MonoBehaviour
             targetRotation.eulerAngles = euler;
 
         }
-        else if (eventData.button == PointerEventData.InputButton.Middle || MapUI.Instance.CurrentMode == Mode.Drag)
+        else if (eventData.button == PointerEventData.InputButton.Middle || MapUI.Instance.CurrentMode == MapMode.Drag)
         {
             targetPosition += MovementVector(x, 0, y) * -dragMoveSpeed;
         }
@@ -100,7 +100,7 @@ public class MapCameraManager : MonoBehaviour
 
     public void OnClick(PointerEventData eventData)
     {
-        if (MapUI.Instance.CurrentMode == Mode.Drag)
+        if (MapUI.Instance.CurrentMode == MapMode.Drag)
         {
             return;
         }

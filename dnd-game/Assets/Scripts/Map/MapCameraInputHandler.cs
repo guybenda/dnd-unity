@@ -16,6 +16,8 @@ public class MapCameraInputHandler : MonoBehaviour, IDragHandler, IPointerDownHa
 
     void Update()
     {
+        HandleMovementKeys();
+
         var mousePos = Input.mousePosition;
         pointerData.position = mousePos;
         EventSystem.current.RaycastAll(pointerData, raycastResults);
@@ -24,7 +26,6 @@ public class MapCameraInputHandler : MonoBehaviour, IDragHandler, IPointerDownHa
         {
             if (raycastResults[0].gameObject == gameObject)
             {
-                HandleMovementKeys();
                 HandleScroll();
             }
         }
@@ -37,7 +38,8 @@ public class MapCameraInputHandler : MonoBehaviour, IDragHandler, IPointerDownHa
 
     void HandleMovementKeys()
     {
-        Vector3 moveVector = new(Input.GetAxis("Horizontal"), Input.GetAxis("Lateral"), Input.GetAxis("Vertical"));
+        Vector3 moveVector = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical")).normalized;
+        moveVector.y += Input.GetAxis("Lateral");
 
         if (moveVector == Vector3.zero) return;
 
@@ -46,7 +48,6 @@ public class MapCameraInputHandler : MonoBehaviour, IDragHandler, IPointerDownHa
 
     void HandleScroll()
     {
-        // var scroll = Input.GetAxis("Mouse ScrollWheel");
         var scroll = Input.mouseScrollDelta.y;
 
         if (scroll == 0f) return;

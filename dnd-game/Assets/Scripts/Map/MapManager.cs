@@ -21,7 +21,13 @@ public class MapManager : MonoBehaviour
 
     void Start()
     {
-        Map = Map.NewDefaultMap("test_game_id");
+        // Map = Map.NewDefaultMap("test_game_id");
+        LoadMap();
+    }
+
+    async void LoadMap()
+    {
+        Map = await Map.Get("4c2d7c4e-ac1f-4513-806f-eef1005be565", withData: true);
     }
 
     void Update()

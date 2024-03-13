@@ -25,6 +25,8 @@ public class Map
     {
         Id = Guid.NewGuid().ToString();
         GameId = gameId;
+        CreatedAt = DateTime.Now;
+        Name = "New Map";
     }
 
     public static Map NewDefaultMap(string gameId)
@@ -51,10 +53,17 @@ public class Map
         UpdatedAt = dbMap.UpdatedAt.ToDateTime();
     }
 
-    public static async Task<Map> Get(string id)
+    public static async Task<Map> Get(string id, bool withData = false)
     {
         var dbMap = await MapFirebase.Get(id);
-        return new Map(dbMap);
+        var map = new Map(dbMap);
+
+        if (withData)
+        {
+            await map.LoadData();
+        }
+
+        return map;
     }
 
     public static async Task<List<Map>> GetGameMaps(string gameId)
@@ -63,7 +72,7 @@ public class Map
         return dbMaps.Select(dbGame => new Map(dbGame)).ToList();
     }
 
-    public async Task LoadData()
+    public async Task<Map> LoadData()
     {
         Chunks = new();
         var dbData = await MapFirebase.LoadData(Id);
@@ -72,6 +81,8 @@ public class Map
         {
             Chunks.Add(position, new MapChunk(dbChunk));
         }
+
+        return this;
     }
 
     public async Task Save()
@@ -270,4 +281,6 @@ class MapFirebase
 
         await batch.CommitAsync();
     }
+
+
 }

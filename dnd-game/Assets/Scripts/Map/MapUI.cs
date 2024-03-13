@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -11,39 +12,40 @@ public class MapUI : MonoBehaviour
     public static MapUI Instance { get; private set; }
 
     public GameObject ModeButtonsContainer;
-    public GameObject ModeButtonPrefab;
+    public GameObject ActionButtonsContainer;
+    public GameObject ButtonPrefab;
     public TMP_Text StatusText;
 
     const float maxRaycastDistance = 160f;
 
     List<RaycastResult> raycastResults = new();
-    PointerEventData pointerData = new(EventSystem.current);
+    PointerEventData pointerData;
 
-    Mode _currentMode;
-    public Mode CurrentMode
+    MapMode _currentMode;
+    public MapMode CurrentMode
     {
         get => _currentMode;
         set
         {
             _currentMode = value;
 
-            foreach (var modeButton in ModeButton.Buttons)
+            foreach (var modeButton in MapUIButton.ModeButtons)
             {
                 if (modeButton.Mode == value)
                 {
-                    modeButton.Button.colors = ModeButton.SelectedColor;
+                    modeButton.Button.colors = MapUIButton.SelectedColor;
                 }
                 else
                 {
-                    modeButton.Button.colors = ModeButton.NormalColors;
+                    modeButton.Button.colors = MapUIButton.NormalColor;
                 }
             }
 
             var tilesSelector = GetComponentInChildren<MapTileSelectorScript>(true);
-            tilesSelector.gameObject.SetActive(value == Mode.Draw);
-            tilesSelector.Expanded = value == Mode.Draw;
+            tilesSelector.gameObject.SetActive(value == MapMode.Draw);
+            tilesSelector.Expanded = value == MapMode.Draw;
 
-            if (value == Mode.Erase)
+            if (value == MapMode.Erase)
             {
                 CurrentTileType = TileType.Empty;
             }
@@ -57,7 +59,6 @@ public class MapUI : MonoBehaviour
         set
         {
             _currentTileType = value;
-
         }
     }
 
@@ -65,7 +66,7 @@ public class MapUI : MonoBehaviour
 
     void Start()
     {
-        CurrentMode = Mode.Drag;
+        CurrentMode = MapMode.Drag;
     }
 
     void Update()
@@ -83,22 +84,24 @@ public class MapUI : MonoBehaviour
 
         Instance = this;
 
-        foreach (var modeButton in ModeButton.Buttons)
+        foreach (var modeButton in MapUIButton.ModeButtons)
         {
-            var button = Instantiate(ModeButtonPrefab, ModeButtonsContainer.transform);
-            button.transform.GetChild(0).GetComponent<Image>().sprite = Resources.Load<Sprite>($"Icons/{modeButton.IconName}");
-
-            var buttonComp = button.GetComponent<Button>();
-            buttonComp.colors = ModeButton.NormalColors;
-            buttonComp.name = modeButton.Mode.ToString();
+            var button = modeButton.Create(ButtonPrefab, ModeButtonsContainer.transform);
 
             var mode = modeButton.Mode;
-            buttonComp.onClick.AddListener(() => OnClickMode(mode));
+            button.onClick.AddListener(() => OnClickMode(mode));
+        }
 
-            modeButton.Button = buttonComp;
+        foreach (var modeButton in MapUIButton.ActionButtons)
+        {
+            var button = modeButton.Create(ButtonPrefab, ActionButtonsContainer.transform, true);
+
+            var action = modeButton.Mode;
+            button.onClick.AddListener(() => OnClickAction(action));
         }
 
         cam = Camera.main;
+        pointerData = new(EventSystem.current);
     }
 
     void HandleStatusText()
@@ -133,7 +136,7 @@ public class MapUI : MonoBehaviour
         StatusText.text = "";
     }
 
-    public void OnClickMode(Mode mode)
+    void OnClickMode(MapMode mode)
     {
         CurrentMode = mode;
     }
@@ -156,6 +159,26 @@ public class MapUI : MonoBehaviour
         }
     }
 
+    async void OnClickAction(MapAction action)
+    {
+        switch (action)
+        {
+            case MapAction.RealignCamera:
+                MapCameraManager.Instance.OrientCamera();
+                break;
+            case MapAction.CenterCamera:
+                MapCameraManager.Instance.CenterCamera();
+                break;
+            case MapAction.Save:
+                Debug.Log("Save");
+                await MapManager.Instance.Map.SaveData();
+                Debug.Log("Save done");
+                break;
+            case MapAction.Discard:
+                break;
+        }
+    }
+
     public void OnClickOrient()
     {
         MapCameraManager.Instance.OrientCamera();
@@ -175,56 +198,17 @@ public class MapUI : MonoBehaviour
 
 
 
-public enum Mode
+public enum MapMode
 {
     Drag,
     Draw,
     Erase,
 }
 
-class ModeButton
+enum MapAction
 {
-    public Mode Mode;
-    public string IconName;
-    public Button Button;
-
-
-    public static readonly List<ModeButton> Buttons = new()
-    {
-        new() {
-            Mode = Mode.Drag,
-            IconName = "hand",
-        },
-        new() {
-            Mode = Mode.Draw,
-            IconName = "brush-01",
-        },
-        new() {
-            Mode = Mode.Erase,
-            IconName = "eraser",
-        }
-    };
-
-
-    public static readonly ColorBlock NormalColors = new()
-    {
-        normalColor = new(0.7f, 0.7f, 0.7f, 0.5f),
-        highlightedColor = new(1f, 1f, 1f, 0.8f),
-        pressedColor = new Color32(200, 200, 200, byte.MaxValue),
-        selectedColor = new Color32(245, 245, 245, byte.MaxValue),
-        disabledColor = new Color32(200, 200, 200, 128),
-        colorMultiplier = 1f,
-        fadeDuration = 0.1f
-    };
-
-    public static readonly ColorBlock SelectedColor = new()
-    {
-        normalColor = new(1, 1, 1, 1),
-        highlightedColor = new(1f, 1f, 1f, 0.8f),
-        pressedColor = new Color32(200, 200, 200, byte.MaxValue),
-        selectedColor = new Color32(245, 245, 245, byte.MaxValue),
-        disabledColor = new Color32(200, 200, 200, 128),
-        colorMultiplier = 1f,
-        fadeDuration = 0.1f
-    };
+    RealignCamera,
+    CenterCamera,
+    Save,
+    Discard,
 }
