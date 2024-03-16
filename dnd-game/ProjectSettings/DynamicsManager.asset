@@ -6,7 +6,7 @@ PhysicsManager:
   serializedVersion: 16
   m_Gravity: {x: 0, y: -40, z: 0}
   m_DefaultMaterial: {fileID: 0}
-  m_BounceThreshold: 1
+  m_BounceThreshold: 1.25
   m_DefaultMaxDepenetrationVelocity: 10
   m_SleepThreshold: 0.005
   m_DefaultContactOffset: 0.01
@@ -15,8 +15,8 @@ PhysicsManager:
   m_QueriesHitBackfaces: 0
   m_QueriesHitTriggers: 1
   m_EnableAdaptiveForce: 0
-  m_ClothInterCollisionDistance: 0
-  m_ClothInterCollisionStiffness: 0
+  m_ClothInterCollisionDistance: 0.1
+  m_ClothInterCollisionStiffness: 0.2
   m_LayerCollisionMatrix: ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
   m_SimulationMode: 0
   m_AutoSyncTransforms: 0
