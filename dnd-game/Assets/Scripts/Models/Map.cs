@@ -21,12 +21,12 @@ public class Map
 
     public Chunker<MapChunk> Chunks { get; set; } = new();
 
-    public Map(string gameId)
+    public Map(string gameId, string name = "New Map")
     {
         Id = Guid.NewGuid().ToString();
         GameId = gameId;
         CreatedAt = DateTime.Now;
-        Name = "New Map";
+        Name = name;
     }
 
     public static Map NewDefaultMap(string gameId)

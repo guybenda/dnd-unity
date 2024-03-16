@@ -19,9 +19,11 @@ public class Game
 
     public List<string> Maps { get; set; }
 
-    public Game()
+    public Game(string name = "New Game")
     {
         Id = Guid.NewGuid().ToString();
+        CreatedAt = DateTime.Now;
+        Name = name;
     }
 
     Game(GameFirebase dbGame)

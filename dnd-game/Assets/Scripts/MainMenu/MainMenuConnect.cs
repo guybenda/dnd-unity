@@ -1,7 +1,4 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+
 using System.Text;
 using System.Text.RegularExpressions;
 using DndFirebase;
@@ -11,10 +8,11 @@ using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class MainMenuScript : MonoBehaviour
+public class MainMenuConnect : MonoBehaviour
 {
+    MainMenuScript mainMenuScript;
+
     public TMP_Text ErrorText;
-    public GameObject Loader;
 
     SyncExecutor exec = new();
     const ushort port = 42069;
@@ -23,12 +21,22 @@ public class MainMenuScript : MonoBehaviour
 
     void Start()
     {
+        mainMenuScript.SetLoading(true);
+        SetError();
+
+        if (NetworkManager.Singleton.NetworkConfig == null ||
+            AuthManager.Instance == null ||
+            AuthManager.Instance.CurrentUser == null)
+        {
+            SceneTransitionManager.Instance.LoginScreen();
+            return;
+        }
+
         NetworkManager.Singleton.NetworkConfig.ConnectionApproval = true;
         NetworkManager.Singleton.NetworkConfig.ConnectionData =
             Encoding.ASCII.GetBytes(AuthManager.Instance.CurrentUser.Email.ToString());
 
-        SetLoading(false);
-        SetError();
+        mainMenuScript.SetLoading(false);
     }
 
     void Update()
@@ -38,7 +46,7 @@ public class MainMenuScript : MonoBehaviour
 
     void Awake()
     {
-
+        mainMenuScript = GetComponentInParent<MainMenuScript>();
     }
 
     public void OnClickConnect()
@@ -57,7 +65,7 @@ public class MainMenuScript : MonoBehaviour
             return;
         }
 
-        SetLoading(true);
+        mainMenuScript.SetLoading(true);
 
         exec.Enqueue(() =>
         {
@@ -75,7 +83,7 @@ public class MainMenuScript : MonoBehaviour
         if (!NetworkManager.Singleton.StartClient())
         {
             SetError("Failed to connect to server");
-            SetLoading(false);
+            mainMenuScript.SetLoading(false);
             return;
         }
 
@@ -92,14 +100,14 @@ public class MainMenuScript : MonoBehaviour
             return;
         }
 
-        SetLoading(false);
+        mainMenuScript.SetLoading(false);
         SetError("Failed to connect to server");
 
     }
 
     public void OnClickHost()
     {
-        SetLoading(true);
+        mainMenuScript.SetLoading(true);
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(
             "127.0.0.1",
             port,
@@ -147,10 +155,5 @@ public class MainMenuScript : MonoBehaviour
     void SetError(string error = "")
     {
         ErrorText.text = error;
-    }
-
-    void SetLoading(bool isLoading)
-    {
-        Loader.SetActive(isLoading);
     }
 }

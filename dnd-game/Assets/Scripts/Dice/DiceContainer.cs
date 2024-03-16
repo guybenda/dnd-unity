@@ -167,7 +167,6 @@ public class DiceContainer : NetworkBehaviour
         {
             if (value > 0)
             {
-                builder.Append($"{value}d{(int)key}");
                 if (!first)
                 {
                     builder.Append(" + ");
@@ -176,6 +175,8 @@ public class DiceContainer : NetworkBehaviour
                 {
                     first = false;
                 }
+
+                builder.Append($"{value}d{(int)key}");
             }
         }
 
